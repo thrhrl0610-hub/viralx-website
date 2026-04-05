@@ -5,11 +5,16 @@ import { supabase } from '@/lib/supabase'
 export default function Home() {
   const [portfolios, setPortfolios] = useState<any[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
+  const [intro, setIntro] = useState(true)
+  const [introFade, setIntroFade] = useState(false)
 
   useEffect(() => {
     supabase.from('portfolio').select('*').order('created_at', { ascending: false }).then(({ data }) => {
       if (data) setPortfolios(data)
     })
+    const t1 = setTimeout(() => setIntroFade(true), 2200)
+    const t2 = setTimeout(() => setIntro(false), 2900)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   return (
@@ -20,6 +25,13 @@ export default function Home() {
         :root{--black:#0a0a0a;--white:#f5f5f3;--gray:#f0efed;--mid:#888}
         html{scroll-behavior:smooth}
         body{background:var(--white);color:var(--black);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+        /* INTRO */
+        .intro{position:fixed;inset:0;background:#0a0a0a;z-index:999;display:flex;align-items:center;justify-content:center;transition:opacity 0.7s ease;pointer-events:all}
+        .intro.fade{opacity:0;pointer-events:none}
+        .intro-glow{position:absolute;width:600px;height:400px;background:radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);pointer-events:none}
+        .intro-word{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:500;letter-spacing:0.04em;color:#f5f5f3;position:relative;animation:intro-in 0.5s ease 0.4s both}
+        @keyframes intro-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
         /* NAV */
         nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.15rem 2.5rem;background:var(--white);border-bottom:1px solid rgba(0,0,0,0.08)}
@@ -59,7 +71,6 @@ export default function Home() {
         .cl-ticker-wrap{display:flex;align-items:center;gap:0}
         .cl-ticker{display:inline-flex;animation:cltick 20s linear infinite;white-space:nowrap}
         .cl-item{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:rgba(0,0,0,0.22);padding:0 3rem;white-space:nowrap}
-        .cl-dot{color:rgba(0,0,0,0.15);padding:0 0.5rem}
         @keyframes cltick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
         /* WORK */
@@ -136,23 +147,17 @@ export default function Home() {
           .nav-links{display:none}
           .nav-cta{display:none}
           .hamburger{display:flex}
-
           #hero{padding:3rem 1.5rem 2.5rem;min-height:85vh}
           .hero-foot{flex-direction:column;gap:1.2rem;align-items:flex-start}
           .hero-loc{display:none}
-
           #clients{padding:1.5rem 0}
-
           .work-hd{padding:2rem 1.5rem 1.5rem}
           .w-item{grid-template-columns:1fr 40px;padding:1.2rem 1.5rem}
           .w-type,.w-yr{display:none}
           .w-client{font-size:18px}
-
           #statement{padding:5rem 1.5rem}
-
           #verticals{padding:4rem 1.5rem}
           .v-grid{grid-template-columns:1fr}
-
           .svc-top{grid-template-columns:1fr}
           .svc-hd{border-right:none;border-bottom:1px solid rgba(0,0,0,0.08);padding:3rem 1.5rem}
           .svc-intro{padding:2rem 1.5rem}
@@ -161,16 +166,22 @@ export default function Home() {
           .svc-item:nth-child(-n+3){border-top:1px solid rgba(0,0,0,0.08)}
           .svc-item:first-child{border-top:none}
           .svc-item{padding:2rem 1.5rem}
-
           #contact{grid-template-columns:1fr}
           .ct-l{border-right:none;border-bottom:1px solid rgba(0,0,0,0.08);padding:3rem 1.5rem}
           .ct-r{padding:3rem 1.5rem}
           .f-row{grid-template-columns:1fr}
-
           footer{flex-direction:column;gap:1.2rem;text-align:center;padding:2rem 1.5rem}
           .ft-links{flex-wrap:wrap;justify-content:center;gap:1.2rem}
         }
       `}</style>
+
+      {/* INTRO */}
+      {intro && (
+        <div className={`intro${introFade ? ' fade' : ''}`}>
+          <div className="intro-glow"/>
+          <span className="intro-word">ViralX</span>
+        </div>
+      )}
 
       {/* 모바일 메뉴 */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
@@ -214,7 +225,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Clients ticker */}
       <div id="clients">
         <div className="cl-ticker-wrap">
           <div className="cl-ticker">
