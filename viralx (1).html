@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViralX — Auckland</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --black: #0a0a0a;
+  --white: #f5f5f3;
+  --gray: #f0efed;
+  --mid: #888;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* INTRO */
+#intro {
+  position: fixed; inset: 0;
+  background: var(--black);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.7s ease 0.2s;
+}
+#intro.hidden { opacity: 0; pointer-events: none; }
+#intro.gone { display: none; }
+.intro-glow {
+  position: absolute;
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 68%);
+}
+.intro-wordmark {
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  opacity: 0;
+  animation: wm-in 0.5s ease 0.5s forwards;
+}
+@keyframes wm-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.15rem 2.5rem;
+  background: var(--white);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.nav-logo {
+  font-weight: 500; font-size: 17px; letter-spacing: 0.02em;
+  color: var(--black); text-decoration: none;
+}
+.nav-links {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 2.8rem; list-style: none;
+}
+.nav-links a {
+  font-size: 14px; color: var(--black); text-decoration: none;
+  transition: opacity 0.2s;
+}
+.nav-links a:hover { opacity: 0.4; }
+.nav-cta {
+  font-size: 14px; color: var(--black); text-decoration: none;
+  transition: opacity 0.2s;
+}
+.nav-cta:hover { opacity: 0.4; }
+
+/* HERO */
+#hero {
+  margin-top: 56px;
+  background: var(--black);
+  padding: 5vw 2.5rem 3.5rem;
+  min-height: 87vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  overflow: hidden;
+}
+.h-line { overflow: hidden; }
+.h-text {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(70px, 13vw, 196px);
+  line-height: 0.92;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  display: block;
+  opacity: 0; transform: translateY(55px);
+  animation: su 0.85s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.h-text.stroke {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.35);
+}
+.h-text.l1 { animation-delay: 0.08s; }
+.h-text.l2 { animation-delay: 0.2s; }
+.h-text.l3 { animation-delay: 0.32s; }
+@keyframes su {
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-foot {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 3.5rem; padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  opacity: 0; animation: fi 0.6s ease 0.65s forwards;
+}
+@keyframes fi { to { opacity: 1; } }
+.hero-desc {
+  font-size: 14px; color: rgba(255,255,255,0.4);
+  max-width: 340px; line-height: 1.75;
+}
+.hero-loc { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.22); }
+.hero-link {
+  font-size: 13px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--white); text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.28); padding-bottom: 2px;
+  transition: border-color 0.25s;
+}
+.hero-link:hover { border-color: var(--white); }
+
+/* TICKER */
+.ticker { background: var(--black); border-top: 1px solid rgba(255,255,255,0.08); padding: 0.9rem 0; overflow: hidden; white-space: nowrap; }
+.ticker-track { display: inline-flex; animation: tick 24s linear infinite; }
+.ti { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.28); padding: 0 2.5rem; }
+.ti b { color: rgba(255,255,255,0.08); font-weight: 400; }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* CLIENTS */
+#clients {
+  padding: 3rem 2.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex; align-items: center; gap: 3.5rem;
+}
+.cl-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mid); white-space: nowrap; }
+.cl-sep { width: 1px; height: 22px; background: rgba(0,0,0,0.1); flex-shrink: 0; }
+.cl-list { display: flex; gap: 3rem; flex-wrap: wrap; align-items: center; }
+.cl-name { font-size: 14px; font-weight: 500; color: rgba(0,0,0,0.18); transition: color 0.22s; cursor: default; }
+.cl-name:hover { color: var(--black); }
+
+/* WORK */
+#work { }
+.work-hd {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 2.8rem 2.5rem 2rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.sec-label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); }
+.w-count { font-size: 11px; letter-spacing: 0.1em; color: var(--mid); }
+.w-item {
+  display: grid; grid-template-columns: 3fr 1.2fr 1fr 60px;
+  align-items: center; padding: 1.5rem 2.5rem;
+  border-top: 1px solid rgba(0,0,0,0.07);
+  cursor: pointer; text-decoration: none; color: inherit;
+  transition: background 0.18s;
+}
+.w-item:hover { background: rgba(0,0,0,0.025); }
+.w-item:hover .wa { transform: translateX(3px); }
+.w-client { font-size: 21px; font-weight: 500; letter-spacing: -0.01em; }
+.w-type { font-size: 13px; color: var(--mid); }
+.w-yr { font-size: 13px; color: var(--mid); }
+.wa { font-size: 16px; color: var(--mid); text-align: right; transition: transform 0.2s; }
+
+/* STATEMENT */
+#statement {
+  background: var(--black);
+  padding: 9rem 2.5rem;
+  text-align: center;
+}
+.st-text {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(44px, 7.5vw, 116px);
+  text-transform: uppercase;
+  line-height: 0.93;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  max-width: 1100px; margin: 0 auto;
+}
+.st-text .out {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.28);
+}
+.st-sub { margin-top: 2.8rem; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+
+/* VERTICALS */
+#verticals { padding: 6rem 2.5rem; background: var(--gray); }
+.v-label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); margin-bottom: 3.5rem; display: block; }
+.v-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 1px; background: rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.v-card { background: var(--gray); padding: 3rem 2.4rem; transition: background 0.28s; }
+.v-card:hover { background: var(--white); }
+.v-handle { font-size: 11px; letter-spacing: 0.11em; color: var(--mid); margin-bottom: 1.6rem; display: block; }
+.v-name { font-family: 'Anton', sans-serif; font-size: 36px; text-transform: uppercase; line-height: 1; margin-bottom: 1rem; }
+.v-desc { font-size: 13px; color: var(--mid); line-height: 1.72; max-width: 270px; }
+
+/* SERVICES */
+#services { }
+.svc-top {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.svc-hd {
+  padding: 5rem 2.5rem;
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+.svc-hd h2 {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(40px,5.5vw,76px);
+  text-transform: uppercase; line-height: 0.93; letter-spacing: -0.01em;
+  margin-top: 2rem;
+}
+.svc-intro { padding: 5rem 2.5rem; display: flex; align-items: flex-end; }
+.svc-intro p { font-size: 15px; color: var(--mid); line-height: 1.8; max-width: 400px; }
+.svc-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.svc-item {
+  padding: 2.5rem 2.4rem;
+  border-right: 1px solid rgba(0,0,0,0.08);
+  border-top: 1px solid rgba(0,0,0,0.08);
+  transition: background 0.18s;
+}
+.svc-item:last-child { border-right: none; }
+.svc-item:nth-child(-n+3) { border-top: none; }
+.svc-item:hover { background: rgba(0,0,0,0.02); }
+.svc-n { font-size: 11px; letter-spacing: 0.1em; color: rgba(0,0,0,0.18); margin-bottom: 1.8rem; }
+.svc-name { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 0.6rem; }
+.svc-desc { font-size: 13px; color: var(--mid); line-height: 1.72; }
+
+/* CONTACT */
+#contact { display: grid; grid-template-columns: 1fr 1fr; min-height: 75vh; }
+.ct-l {
+  padding: 6rem 2.5rem;
+  border-right: 1px solid rgba(0,0,0,0.08);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.ct-l h2 { font-family: 'Anton', sans-serif; font-size: clamp(48px,6vw,90px); text-transform: uppercase; line-height: 0.93; letter-spacing: -0.01em; margin-top: 2rem; }
+.ct-details { display: flex; flex-direction: column; gap: 1.3rem; }
+.ct-row { display: flex; gap: 2rem; }
+.ct-key { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); min-width: 80px; padding-top: 1px; }
+.ct-val { font-size: 14px; color: var(--black); }
+.ct-r { padding: 6rem 2.5rem; display: flex; flex-direction: column; gap: 1.1rem; justify-content: center; }
+.fl { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); display: block; margin-bottom: 0.35rem; }
+input, select, textarea {
+  width: 100%; background: transparent; border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.14);
+  color: var(--black); font-family: 'DM Sans', sans-serif;
+  font-size: 15px; padding: 0.65rem 0; outline: none;
+  transition: border-color 0.22s; appearance: none;
+}
+input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.2); }
+input:focus, select:focus, textarea:focus { border-bottom-color: var(--black); }
+select { cursor: pointer; }
+select option { background: var(--white); }
+textarea { resize: none; height: 78px; }
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.sub-btn {
+  margin-top: 0.8rem; background: var(--black); color: var(--white);
+  border: none; padding: 1rem 2rem;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; width: 100%; transition: opacity 0.22s;
+}
+.sub-btn:hover { opacity: 0.72; }
+
+/* FOOTER */
+footer {
+  padding: 1.8rem 2.5rem;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ft-logo { font-size: 14px; font-weight: 500; }
+.ft-links { display: flex; gap: 2rem; list-style: none; }
+.ft-links a { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid); text-decoration: none; transition: color 0.2s; }
+.ft-links a:hover { color: var(--black); }
+.ft-copy { font-size: 12px; color: rgba(0,0,0,0.22); }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  #hero { padding: 3.5rem 1.5rem 3rem; }
+  .hero-foot { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+  #clients { flex-wrap: wrap; gap: 1.2rem; }
+  .cl-sep { display: none; }
+  .w-item { grid-template-columns: 1fr auto; }
+  .w-type, .w-yr { display: none; }
+  .v-grid { grid-template-columns: 1fr; }
+  .svc-top { grid-template-columns: 1fr; }
+  .svc-hd { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .svc-grid { grid-template-columns: 1fr; }
+  .svc-item { border-right: none; }
+  .svc-item:nth-child(-n+3) { border-top: 1px solid rgba(0,0,0,0.08); }
+  .svc-item:first-child { border-top: none; }
+  #contact { grid-template-columns: 1fr; }
+  .ct-l { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .f-row { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 1rem; text-align: center; }
+  .ft-links { flex-wrap: wrap; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-glow"></div>
+  <div class="intro-wordmark">ViralX</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">ViralX</a>
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#verticals">Studio</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get in touch</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="h-line"><span class="h-text l1">We Make</span></div>
+  <div class="h-line"><span class="h-text stroke l2">What Goes</span></div>
+  <div class="h-line"><span class="h-text l3">Viral.</span></div>
+  <div class="hero-foot">
+    <p class="hero-desc">Under-25 creatives. Hospitality, real estate, and everything in between. Based in Parnell, Auckland.</p>
+    <span class="hero-loc">Auckland · NZ</span>
+    <a href="#work" class="hero-link">View work →</a>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ti">Video Production <b>/</b></span>
+    <span class="ti">Social Media <b>/</b></span>
+    <span class="ti">Paid Ads <b>/</b></span>
+    <span class="ti">Photography <b>/</b></span>
+    <span class="ti">Creative Direction <b>/</b></span>
+    <span class="ti">Hospitality <b>/</b></span>
+    <span class="ti">Real Estate <b>/</b></span>
+    <span class="ti">Influencer <b>/</b></span>
+    <span class="ti">Video Production <b>/</b></span>
+    <span class="ti">Social Media <b>/</b></span>
+    <span class="ti">Paid Ads <b>/</b></span>
+    <span class="ti">Photography <b>/</b></span>
+    <span class="ti">Creative Direction <b>/</b></span>
+    <span class="ti">Hospitality <b>/</b></span>
+    <span class="ti">Real Estate <b>/</b></span>
+    <span class="ti">Influencer <b>/</b></span>
+  </div>
+</div>
+
+<!-- CLIENTS -->
+<div id="clients">
+  <span class="cl-label">Clients</span>
+  <div class="cl-sep"></div>
+  <div class="cl-list">
+    <span class="cl-name">BCG Group</span>
+    <span class="cl-name">Harcourts</span>
+    <span class="cl-name">Ray White</span>
+    <span class="cl-name">Allgot</span>
+    <span class="cl-name">Victoria Sushi</span>
+  </div>
+</div>
+
+<!-- WORK -->
+<section id="work">
+  <div class="work-hd">
+    <span class="sec-label">Selected work</span>
+    <span class="w-count">(06)</span>
+  </div>
+  <div>
+    <a class="w-item" href="#"><span class="w-client">BCG Group</span><span class="w-type">Aerial · Commercial</span><span class="w-yr">2025</span><span class="wa">↗</span></a>
+    <a class="w-item" href="#"><span class="w-client">Harcourts</span><span class="w-type">Video Production</span><span class="w-yr">2025</span><span class="wa">↗</span></a>
+    <a class="w-item" href="#"><span class="w-client">Victoria Sushi</span><span class="w-type">Brand Reels · Social</span><span class="w-yr">2025</span><span class="wa">↗</span></a>
+    <a class="w-item" href="#"><span class="w-client">Allgot</span><span class="w-type">Study Case · Ads</span><span class="w-yr">2024</span><span class="wa">↗</span></a>
+    <a class="w-item" href="#"><span class="w-client">Ray White</span><span class="w-type">Listing Videos</span><span class="w-yr">2024</span><span class="wa">↗</span></a>
+    <a class="w-item" href="#"><span class="w-client">F&amp;B Campaign</span><span class="w-type">Photography · Reels</span><span class="w-yr">2024</span><span class="wa">↗</span></a>
+  </div>
+</section>
+
+<!-- STATEMENT -->
+<section id="statement">
+  <p class="st-text">Content that <span class="out">moves</span><br>people.</p>
+  <p class="st-sub">Parnell, Auckland — Est. 2024</p>
+</section>
+
+<!-- VERTICALS -->
+<section id="verticals">
+  <span class="v-label">Our studio</span>
+  <div class="v-grid">
+    <div class="v-card">
+      <span class="v-handle">@viralx_nz</span>
+      <h3 class="v-name">Agency</h3>
+      <p class="v-desc">Strategy, creative direction, and full-service marketing. The creative mothership.</p>
+    </div>
+    <div class="v-card">
+      <span class="v-handle">@viralx_productions</span>
+      <h3 class="v-name">Productions</h3>
+      <p class="v-desc">Commercial video for real estate and business. Drone, cinematic, social-first.</p>
+    </div>
+    <div class="v-card">
+      <span class="v-handle">@viralx_hospitality</span>
+      <h3 class="v-name">Hospitality</h3>
+      <p class="v-desc">F&amp;B content agency turning everyday restaurants into viral hits.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="svc-top">
+    <div class="svc-hd">
+      <span class="sec-label">What we do</span>
+      <h2>Six<br>services.</h2>
+    </div>
+    <div class="svc-intro">
+      <p>We don't follow trends — we're already living them. Content built for the scroll, the share, the save.</p>
+    </div>
+  </div>
+  <div class="svc-grid">
+    <div class="svc-item"><p class="svc-n">01</p><p class="svc-name">Video Production</p><p class="svc-desc">Commercial reels, property showcases, restaurant content. Shot and edited for every platform.</p></div>
+    <div class="svc-item"><p class="svc-n">02</p><p class="svc-name">Social Media</p><p class="svc-desc">Strategy, content calendars, full channel management across Instagram and TikTok.</p></div>
+    <div class="svc-item"><p class="svc-n">03</p><p class="svc-name">Paid Advertising</p><p class="svc-desc">Meta and Google Ads built on creative that converts — not templates.</p></div>
+    <div class="svc-item"><p class="svc-n">04</p><p class="svc-name">Photography</p><p class="svc-desc">Food, property, and lifestyle photography that sells. Always on brand.</p></div>
+    <div class="svc-item"><p class="svc-n">05</p><p class="svc-name">Creative Direction</p><p class="svc-desc">Visual identity, content strategy, and brand storytelling across every touchpoint.</p></div>
+    <div class="svc-item"><p class="svc-n">06</p><p class="svc-name">Influencer &amp; Talent</p><p class="svc-desc">Curated creator partnerships aligned with your brand. Authentic reach, real results.</p></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="ct-l">
+    <div>
+      <span class="sec-label">Get in touch</span>
+      <h2>Start a<br>project.</h2>
+    </div>
+    <div class="ct-details">
+      <div class="ct-row"><span class="ct-key">Location</span><span class="ct-val">155 The Strand, Parnell, Auckland</span></div>
+      <div class="ct-row"><span class="ct-key">Instagram</span><span class="ct-val">@viralx_nz</span></div>
+      <div class="ct-row"><span class="ct-key">Studio</span><span class="ct-val">@viralx_productions · @viralx_hospitality</span></div>
+    </div>
+  </div>
+  <div class="ct-r">
+    <div class="f-row">
+      <div><label class="fl">First name</label><input type="text" placeholder="Alex"></div>
+      <div><label class="fl">Last name</label><input type="text" placeholder="Smith"></div>
+    </div>
+    <div><label class="fl">Email</label><input type="email" placeholder="alex@yourbrand.co.nz"></div>
+    <div>
+      <label class="fl">Service</label>
+      <select>
+        <option value="">Select a service</option>
+        <option>Video Production</option>
+        <option>Social Media Management</option>
+        <option>Paid Advertising</option>
+        <option>Photography</option>
+        <option>Creative Direction</option>
+        <option>Hospitality Content</option>
+        <option>Real Estate Content</option>
+      </select>
+    </div>
+    <div><label class="fl">About your project</label><textarea placeholder="What are you working on?"></textarea></div>
+    <button class="sub-btn">Send enquiry</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-logo">ViralX</div>
+  <ul class="ft-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#verticals">Studio</a></li>
+    <li><a href="https://instagram.com/viralx_nz" target="_blank">Instagram</a></li>
+  </ul>
+  <p class="ft-copy">© 2025 ViralX Agency · Auckland, NZ</p>
+</footer>
+
+<script>
+const intro = document.getElementById('intro');
+setTimeout(() => {
+  intro.classList.add('hidden');
+  setTimeout(() => intro.classList.add('gone'), 750);
+}, 2800);
+</script>
+</body>
+</html>
