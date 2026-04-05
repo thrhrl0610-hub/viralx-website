@@ -86,10 +86,12 @@ export default function Home() {
         @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
         /* CLIENTS TICKER */
-        #clients{background:var(--white);border-bottom:1px solid rgba(0,0,0,0.08);padding:2rem 0;overflow:hidden}
-        .cl-ticker-wrap{display:flex;align-items:center;gap:0}
-        .cl-ticker{display:inline-flex;animation:cltick 20s linear infinite;white-space:nowrap}
-        .cl-item{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:rgba(0,0,0,0.22);padding:0 3rem;white-space:nowrap}
+        #clients{background:var(--white);border-bottom:1px solid rgba(0,0,0,0.08);padding:2.2rem 0;overflow:hidden}
+        .cl-ticker-wrap{display:flex;align-items:center}
+        .cl-ticker{display:inline-flex;align-items:center;animation:cltick 28s linear infinite;white-space:nowrap}
+        .cl-item{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,0,0,0.2);padding:0 2.5rem;white-space:nowrap;transition:color 0.2s}
+        .cl-item:hover{color:rgba(0,0,0,0.5)}
+        .cl-sep{width:4px;height:4px;border-radius:50%;background:rgba(0,0,0,0.12);flex-shrink:0}
         @keyframes cltick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
         /* WORK */
@@ -203,7 +205,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 모바일 메뉴 */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
         <button className="mobile-menu-close" onClick={() => setMenuOpen(false)}>✕</button>
         <a href="#work" onClick={() => setMenuOpen(false)}>Work</a>
@@ -248,7 +249,7 @@ export default function Home() {
       <div id="clients">
         <div className="cl-ticker-wrap">
           <div className="cl-ticker">
-            {['BCG Group','·','Harcourts','·','Ray White','·','Allgot','·','Victoria Sushi','·','BCG Group','·','Harcourts','·','Ray White','·','Allgot','·','Victoria Sushi','·'].map((c,i) => (
+            {['Sony','BCG Group','Harcourts','Ray White','Allgot','Victoria Sushi','Pocha','Zen Skin','Sony','BCG Group','Harcourts','Ray White','Allgot','Victoria Sushi','Pocha','Zen Skin'].map((c,i) => (
               <span key={i} className="cl-item">{c}</span>
             ))}
           </div>
