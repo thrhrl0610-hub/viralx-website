@@ -7,6 +7,9 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [intro, setIntro] = useState(true)
   const [introFade, setIntroFade] = useState(false)
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', service: '', message: '' })
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
 
   useEffect(() => {
     supabase.from('portfolio').select('*').order('created_at', { ascending: false }).then(({ data }) => {
@@ -16,6 +19,22 @@ export default function Home() {
     const t2 = setTimeout(() => setIntro(false), 2900)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
+
+  async function handleSubmit() {
+    if (!formData.firstName || !formData.email || !formData.service) return
+    setSending(true)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      if (res.ok) setSent(true)
+    } catch (e) {
+      alert('Something went wrong. Please try again.')
+    }
+    setSending(false)
+  }
 
   return (
     <>
@@ -132,6 +151,7 @@ export default function Home() {
         .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
         .sub-btn{margin-top:0.8rem;background:var(--black);color:var(--white);border:none;padding:1rem 2rem;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%;transition:opacity 0.22s}
         .sub-btn:hover{opacity:0.72}
+        .sub-btn:disabled{opacity:0.4;cursor:not-allowed}
 
         /* FOOTER */
         footer{padding:1.8rem 2.5rem;border-top:1px solid rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center}
@@ -315,23 +335,34 @@ export default function Home() {
           </div>
         </div>
         <div className="ct-r">
-          <div className="f-row">
-            <div><label className="fl">First name</label><input type="text" placeholder="Alex"/></div>
-            <div><label className="fl">Last name</label><input type="text" placeholder="Smith"/></div>
-          </div>
-          <div><label className="fl">Email</label><input type="email" placeholder="alex@yourbrand.co.nz"/></div>
-          <div><label className="fl">Service</label>
-            <select>
-              <option value="">Select a service</option>
-              <option>Video Production</option>
-              <option>Social Media Management</option>
-              <option>Paid Advertising</option>
-              <option>Photography</option>
-              <option>Creative Direction</option>
-            </select>
-          </div>
-          <div><label className="fl">About your project</label><textarea placeholder="What are you working on?"></textarea></div>
-          <button className="sub-btn">Send enquiry</button>
+          {sent ? (
+            <div style={{textAlign:'center',padding:'2rem 0'}}>
+              <p style={{fontSize:'13px',letterSpacing:'0.08em',textTransform:'uppercase'}}>Enquiry sent ✓</p>
+              <p style={{fontSize:'13px',color:'var(--mid)',marginTop:'0.5rem'}}>We&apos;ll be in touch soon.</p>
+            </div>
+          ) : (
+            <>
+              <div className="f-row">
+                <div><label className="fl">First name</label><input type="text" placeholder="Alex" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})}/></div>
+                <div><label className="fl">Last name</label><input type="text" placeholder="Smith" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})}/></div>
+              </div>
+              <div><label className="fl">Email</label><input type="email" placeholder="alex@yourbrand.co.nz" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}/></div>
+              <div><label className="fl">Service</label>
+                <select value={formData.service} onChange={e => setFormData({...formData, service: e.target.value})}>
+                  <option value="">Select a service</option>
+                  <option>Video Production</option>
+                  <option>Social Media Management</option>
+                  <option>Paid Advertising</option>
+                  <option>Photography</option>
+                  <option>Creative Direction</option>
+                </select>
+              </div>
+              <div><label className="fl">About your project</label><textarea placeholder="What are you working on?" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}></textarea></div>
+              <button className="sub-btn" onClick={handleSubmit} disabled={sending}>
+                {sending ? 'Sending...' : 'Send enquiry'}
+              </button>
+            </>
+          )}
         </div>
       </section>
 
