@@ -53,11 +53,14 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
-        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-        .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden}
+        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;padding:0 2.5rem;max-width:1100px;margin:0 auto}
+        .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden;border-radius:2px}
         .media-card img{width:100%;height:100%;object-fit:cover;display:block}
         .media-card:hover .play-overlay{opacity:1}
         .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s}
+        @media(max-width:768px){
+          .media-grid{padding:0 1rem;gap:0.4rem}
+        }
       `}</style>
 
       {activeVideo && (
@@ -76,7 +79,7 @@ export default function WorkDetail() {
         <span style={{color:'#fff',fontWeight:500,fontSize:'16px',fontFamily:'sans-serif'}}>ViralX</span>
       </div>
 
-      <div style={{padding:'2rem 2.5rem',maxWidth:'1100px',margin:'0 auto'}}>
+      <div style={{padding:'3rem 2.5rem 2rem',maxWidth:'1100px',margin:'0 auto'}}>
         <p style={{fontSize:'11px',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--mid)',marginBottom:'0.8rem'}}>{portfolio.category} · {portfolio.year}</p>
         <h1 style={{fontFamily:'Anton',fontSize:'clamp(48px,8vw,96px)',textTransform:'uppercase',lineHeight:0.93,marginBottom:'1rem'}}>{portfolio.client}</h1>
         {portfolio.type && <p style={{fontSize:'14px',color:'var(--mid)',marginBottom:'2rem'}}>{portfolio.type}</p>}
