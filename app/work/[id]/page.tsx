@@ -57,8 +57,8 @@ export default function WorkDetail() {
         .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;padding:0 2.5rem 3rem}
         .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden;border-radius:2px}
         .media-card img{width:100%;height:100%;object-fit:cover;display:block}
-        .media-card:hover .play-overlay{opacity:1}
-        .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s}
+        .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);opacity:1;transition:opacity 0.2s}
+        .play-icon{font-size:36px;color:#fff;opacity:0.85}
         @media(max-width:768px){
           .info-wrap{padding:1.5rem 1rem 1rem}
           .media-grid{padding:0 0.3rem 1.5rem;gap:0.3rem;max-width:100%}
@@ -99,7 +99,7 @@ export default function WorkDetail() {
                 <>
                   <img src={m.thumbnail_url} alt=""/>
                   <div className="play-overlay">
-                    <span style={{fontSize:'40px',color:'#fff'}}>▶</span>
+                    <span className="play-icon">▶</span>
                   </div>
                 </>
               ) : (
