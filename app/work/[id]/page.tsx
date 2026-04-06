@@ -53,11 +53,10 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
-        .media-item{cursor:pointer;position:relative;overflow:hidden;break-inside:avoid;margin-bottom:1.5rem}
-        .media-item img{width:100%;height:auto;display:block}
-        .media-item:hover .play-overlay{opacity:1}
+        .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden}
+        .media-card img{width:100%;height:100%;object-fit:cover;display:block}
+        .media-card:hover .play-overlay{opacity:1}
         .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s}
-        .video-placeholder{background:#0a0a0a;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;cursor:pointer}
       `}</style>
 
       {activeVideo && (
@@ -84,9 +83,9 @@ export default function WorkDetail() {
         {medias.length === 0 ? (
           <p style={{color:'var(--mid)',fontSize:'14px'}}>No media uploaded yet.</p>
         ) : (
-          <div style={{columns:'2 300px',columnGap:'1.5rem'}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'1.5rem'}}>
             {medias.map((m, i) => (
-              <div key={m.id} className="media-item" onClick={() => setActiveVideo(m.url)}>
+              <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
                 {m.type === 'image' ? (
                   <img src={m.url} alt=""/>
                 ) : m.thumbnail_url ? (
@@ -97,7 +96,7 @@ export default function WorkDetail() {
                     </div>
                   </>
                 ) : (
-                  <div className="video-placeholder">
+                  <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'0.8rem'}}>
                     <span style={{fontSize:'32px',color:'#fff'}}>▶</span>
                     <span style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(255,255,255,0.4)'}}>Play video {i+1}</span>
                   </div>
