@@ -102,7 +102,7 @@ export default function Home() {
         .w-client{font-size:21px;font-weight:500;letter-spacing:-0.01em}
         .w-type{font-size:13px;color:var(--mid)}
         .w-yr{font-size:13px;color:var(--mid)}
-        .wa{font-size:16px;color:var(--mid);text-align:right;transition:transform 0.2s;font-family:'DM Sans',sans-serif;-webkit-text-stroke:0;text-rendering:auto}
+        .wa{display:flex;align-items:center;justify-content:flex-end;transition:transform 0.2s}
         .w-item:hover .wa{transform:translateX(3px)}
 
         /* STATEMENT */
@@ -174,8 +174,8 @@ export default function Home() {
           .hero-loc{display:none}
           #clients{padding:1.5rem 0}
           .work-hd{padding:2rem 1.5rem 1.5rem}
-          .w-item{grid-template-columns:1fr 40px;padding:1.2rem 1.5rem}
-          .w-type,.w-yr{display:none}
+          .w-item{grid-template-columns:1fr;padding:1.2rem 1.5rem}
+          .w-type,.w-yr,.wa{display:none}
           .w-client{font-size:18px}
           #statement{padding:5rem 1.5rem}
           #verticals{padding:4rem 1.5rem}
@@ -268,7 +268,11 @@ export default function Home() {
               <span className="w-client">{p.client}</span>
               <span className="w-type">{p.type}</span>
               <span className="w-yr">{p.year}</span>
-              <span className="wa" style={{fontFamily:'sans-serif',fontSize:'14px'}}>↗</span>
+              <span className="wa">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
             </a>
           )) : (
             ['BCG Group','Harcourts','Victoria Sushi','Allgot','Ray White','F&B Campaign'].map((c,i) => (
@@ -277,10 +281,10 @@ export default function Home() {
                 <span className="w-type">Video Production</span>
                 <span className="w-yr">2025</span>
                 <span className="wa">
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
               </a>
             ))
           )}
