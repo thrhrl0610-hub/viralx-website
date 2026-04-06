@@ -53,12 +53,15 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
+        .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+        .media-card:hover .play-overlay{opacity:1}
+        .play-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;background:rgba(0,0,0,0.4);opacity:0;transition:opacity 0.2s}
       `}</style>
 
       {activeVideo && (
         <div className="modal-overlay" onClick={() => setActiveVideo(null)}>
           <button className="modal-close" onClick={() => setActiveVideo(null)}>✕</button>
-          {activeVideo.includes('supabase') || activeVideo.endsWith('.mp4') ? (
+          {activeVideo.includes('supabase') || activeVideo.endsWith('.mp4') || activeVideo.endsWith('.mov') ? (
             <video className="modal-video" src={activeVideo} autoPlay controls onClick={e => e.stopPropagation()}/>
           ) : (
             <iframe className="modal-iframe" src={getEmbedUrl(activeVideo)} allow="autoplay; fullscreen" allowFullScreen/>
@@ -81,10 +84,16 @@ export default function WorkDetail() {
         ) : (
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'1.5rem'}}>
             {medias.map((m, i) => (
-              <div key={m.id} onClick={() => setActiveVideo(m.url)}
-                style={{cursor:'pointer',background:'#0a0a0a',aspectRatio:'16/9',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
+              <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
                 {m.type === 'image' ? (
                   <img src={m.url} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                ) : m.thumbnail_url ? (
+                  <>
+                    <img src={m.thumbnail_url} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                    <div className="play-overlay">
+                      <span style={{fontSize:'36px',color:'#fff'}}>▶</span>
+                    </div>
+                  </>
                 ) : (
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'0.8rem'}}>
                     <span style={{fontSize:'32px',color:'#fff'}}>▶</span>

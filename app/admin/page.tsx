@@ -12,7 +12,7 @@ export default function Admin() {
   const [form, setForm] = useState({
     title: '', client: '', category: 'hospitality', type: '', year: '2025'
   })
-  const [mediaFiles, setMediaFiles] = useState<{file: File, type: 'video'|'image', url?: string}[]>([])
+  const [mediaFiles, setMediaFiles] = useState<{file: File, type: 'video'|'image', thumbnailFile?: File}[]>([])
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [existingMedias, setExistingMedias] = useState<any[]>([])
 
@@ -53,13 +53,15 @@ export default function Admin() {
 
       for (let i = 0; i < mediaFiles.length; i++) {
         const m = mediaFiles[i]
-        let url = m.url || ''
-        if (m.file) url = await uploadFile(m.file, 'media')
+        const url = await uploadFile(m.file, 'media')
+        let mediaThumbnail = ''
+        if (m.thumbnailFile) mediaThumbnail = await uploadFile(m.thumbnailFile, 'thumbnails')
         await supabase.from('portfolio_media').insert([{
           portfolio_id: portfolioId,
           url,
           type: m.type,
-          sort_order: (existingMedias.length + i)
+          sort_order: (existingMedias.length + i),
+          thumbnail_url: mediaThumbnail
         }])
       }
 
@@ -115,6 +117,10 @@ export default function Admin() {
     setMediaFiles(prev => [...prev, { file, type }])
   }
 
+  const updateMediaThumbnail = (index: number, file: File) => {
+    setMediaFiles(prev => prev.map((m, i) => i === index ? { ...m, thumbnailFile: file } : m))
+  }
+
   if (!isLoggedIn) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0a0a0a'}}>
       <div style={{background:'#141414',padding:'3rem',width:'360px'}}>
@@ -167,7 +173,7 @@ export default function Admin() {
           </div>
 
           <div style={{marginBottom:'1.5rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Thumbnail Image</label>
+            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Portfolio Thumbnail</label>
             <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && setThumbnailFile(e.target.files[0])}
               style={{fontSize:'13px',color:'#888'}}/>
           </div>
@@ -176,26 +182,41 @@ export default function Admin() {
             <div style={{marginBottom:'1.5rem'}}>
               <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
               {existingMedias.map((m, i) => (
-                <div key={m.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.6rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
-                  <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
-                  <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+                <div key={m.id} style={{padding:'0.8rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
+                    <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+                  </div>
+                  {m.thumbnail_url && (
+                    <p style={{fontSize:'11px',color:'#aaa',marginTop:'4px'}}>썸네일 설정됨 ✓</p>
+                  )}
                 </div>
               ))}
             </div>
           )}
 
           <div style={{marginBottom:'2rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files (video/image, 여러 개 가능)</label>
+            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files</label>
             <input type="file" accept="video/*,image/*" multiple onChange={e => {
               if (e.target.files) Array.from(e.target.files).forEach(addMediaFile)
             }} style={{fontSize:'13px',color:'#888',marginBottom:'0.8rem'}}/>
             {mediaFiles.length > 0 && (
-              <div>
+              <div style={{marginTop:'0.8rem'}}>
                 {mediaFiles.map((m, i) => (
-                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.4rem 0',fontSize:'13px',color:'#555'}}>
-                    <span>{m.type} — {m.file.name.slice(0,40)}</span>
-                    <button onClick={() => setMediaFiles(mediaFiles.filter((_,j) => j !== i))}
-                      style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
+                  <div key={i} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
+                      <span style={{fontSize:'13px',color:'#555'}}>{m.type} — {m.file.name.slice(0,40)}</span>
+                      <button onClick={() => setMediaFiles(mediaFiles.filter((_,j) => j !== i))}
+                        style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
+                    </div>
+                    {m.type === 'video' && (
+                      <div>
+                        <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>Video Thumbnail (선택)</label>
+                        <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && updateMediaThumbnail(i, e.target.files[0])}
+                          style={{fontSize:'12px',color:'#888'}}/>
+                        {m.thumbnailFile && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{m.thumbnailFile.name}</p>}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
