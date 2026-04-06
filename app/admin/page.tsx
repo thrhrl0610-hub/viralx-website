@@ -51,7 +51,6 @@ export default function Admin() {
         portfolioId = data?.[0]?.id
       }
 
-      // 새 미디어 파일 업로드
       for (let i = 0; i < mediaFiles.length; i++) {
         const m = mediaFiles[i]
         let url = m.url || ''
@@ -163,6 +162,7 @@ export default function Admin() {
               <option value="hospitality">Hospitality</option>
               <option value="realestate">Real Estate</option>
               <option value="production">Production</option>
+              <option value="brandevent">Brand Event</option>
             </select>
           </div>
 
@@ -172,7 +172,6 @@ export default function Admin() {
               style={{fontSize:'13px',color:'#888'}}/>
           </div>
 
-          {/* 기존 미디어 */}
           {existingMedias.length > 0 && (
             <div style={{marginBottom:'1.5rem'}}>
               <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
@@ -185,7 +184,6 @@ export default function Admin() {
             </div>
           )}
 
-          {/* 새 미디어 추가 */}
           <div style={{marginBottom:'2rem'}}>
             <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files (video/image, 여러 개 가능)</label>
             <input type="file" accept="video/*,image/*" multiple onChange={e => {
