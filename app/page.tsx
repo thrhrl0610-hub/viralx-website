@@ -310,12 +310,20 @@ export default function Home() {
         <div className="svc-top">
           <div className="svc-hd">
             <span className="sec-label">What we do</span>
-            <h2>Six<br/>services.</h2>
+            <h2>Seven<br/>services.</h2>
           </div>
           <div className="svc-intro"><p>We don&apos;t follow trends — we&apos;re already living them. Content built for the scroll, the share, the save.</p></div>
         </div>
         <div className="svc-grid">
-          {[{n:'01',name:'Video Production',desc:'Commercial reels, property showcases, restaurant content.'},{n:'02',name:'Social Media',desc:'Strategy, content calendars, full channel management.'},{n:'03',name:'Paid Advertising',desc:'Meta and Google Ads built on creative that converts.'},{n:'04',name:'Photography',desc:'Food, property, and lifestyle photography that sells.'},{n:'05',name:'Creative Direction',desc:'Visual identity, content strategy, brand storytelling.'},{n:'06',name:'Influencer & Talent',desc:'Curated creator partnerships. Authentic reach, real results.'}].map(s => (
+          {[
+            {n:'01',name:'Video Production',desc:'Commercial reels, property showcases, restaurant content.'},
+            {n:'02',name:'Social Media',desc:'Strategy, content calendars, full channel management.'},
+            {n:'03',name:'Paid Advertising',desc:'Meta and Google Ads built on creative that converts.'},
+            {n:'04',name:'Photography',desc:'Food, property, and lifestyle photography that sells.'},
+            {n:'05',name:'Creative Direction',desc:'Visual identity, content strategy, brand storytelling.'},
+            {n:'06',name:'Influencer & Talent',desc:'Curated creator partnerships. Authentic reach, real results.'},
+            {n:'07',name:'Web Design',desc:'Clean, modern websites built to convert visitors into clients.'}
+          ].map(s => (
             <div key={s.n} className="svc-item">
               <p className="svc-n">{s.n}</p>
               <p className="svc-name">{s.name}</p>
@@ -357,6 +365,8 @@ export default function Home() {
                   <option>Paid Advertising</option>
                   <option>Photography</option>
                   <option>Creative Direction</option>
+                  <option>Influencer & Talent</option>
+                  <option>Web Design</option>
                 </select>
               </div>
               <div><label className="fl">About your project</label><textarea placeholder="What are you working on?" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}></textarea></div>
