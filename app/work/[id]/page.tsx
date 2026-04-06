@@ -48,7 +48,7 @@ export default function WorkDetail() {
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--black:#0a0a0a;--white:#f5f5f3;--mid:#888}
-        html,body{background:var(--white);font-family:'DM Sans',sans-serif;height:auto}
+        html,body{background:var(--white);font-family:'DM Sans',sans-serif}
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:flex;align-items:center;justify-content:center}
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
@@ -61,7 +61,7 @@ export default function WorkDetail() {
         .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s}
         @media(max-width:768px){
           .info-wrap{padding:1.5rem 1rem 1rem}
-          .media-grid{padding:0 1rem 1.5rem;gap:0.4rem}
+          .media-grid{padding:0 0.3rem 1.5rem;gap:0.3rem;max-width:100%}
         }
       `}</style>
 
