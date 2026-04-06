@@ -10,6 +10,7 @@ export default function Home() {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', service: '', message: '' })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [activeVideo, setActiveVideo] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.from('portfolio').select('*').order('created_at', { ascending: false }).then(({ data }) => {
@@ -34,6 +35,23 @@ export default function Home() {
       alert('Something went wrong. Please try again.')
     }
     setSending(false)
+  }
+
+  function getEmbedUrl(url: string) {
+    if (!url) return ''
+    if (url.includes('youtube.com/watch')) {
+      const id = new URL(url).searchParams.get('v')
+      return `https://www.youtube.com/embed/${id}?autoplay=1`
+    }
+    if (url.includes('youtu.be/')) {
+      const id = url.split('youtu.be/')[1].split('?')[0]
+      return `https://www.youtube.com/embed/${id}?autoplay=1`
+    }
+    if (url.includes('vimeo.com/')) {
+      const id = url.split('vimeo.com/')[1].split('?')[0]
+      return `https://player.vimeo.com/video/${id}?autoplay=1`
+    }
+    return url
   }
 
   return (
@@ -104,6 +122,11 @@ export default function Home() {
         .w-yr{font-size:13px;color:var(--mid)}
         .wa{font-size:16px;color:var(--mid);text-align:right;transition:transform 0.2s}
         .w-item:hover .wa{transform:translateX(3px)}
+
+        /* VIDEO MODAL */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:flex;align-items:center;justify-content:center}
+        .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001;line-height:1}
+        .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
 
         /* STATEMENT */
         #statement{background:var(--black);padding:9rem 2.5rem;text-align:center}
@@ -197,6 +220,20 @@ export default function Home() {
         }
       `}</style>
 
+      {/* VIDEO MODAL */}
+      {activeVideo && (
+        <div className="modal-overlay" onClick={() => setActiveVideo(null)}>
+          <button className="modal-close" onClick={() => setActiveVideo(null)}>✕</button>
+          <iframe
+            className="modal-iframe"
+            src={getEmbedUrl(activeVideo)}
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       {/* INTRO */}
       {intro && (
         <div className={`intro${introFade ? ' fade' : ''}`}>
@@ -263,12 +300,12 @@ export default function Home() {
         </div>
         <div>
           {portfolios.length > 0 ? portfolios.map(p => (
-            <a key={p.id} className="w-item" href="#">
+            <div key={p.id} className="w-item" onClick={() => p.video_url && setActiveVideo(p.video_url)} style={{cursor: p.video_url ? 'pointer' : 'default'}}>
               <span className="w-client">{p.client}</span>
               <span className="w-type">{p.type}</span>
               <span className="w-yr">{p.year}</span>
-              <span className="wa">↗</span>
-            </a>
+              <span className="wa">{p.video_url ? '▶' : '↗'}</span>
+            </div>
           )) : (
             ['BCG Group','Harcourts','Victoria Sushi','Allgot','Ray White','F&B Campaign'].map((c,i) => (
               <a key={i} className="w-item" href="#">

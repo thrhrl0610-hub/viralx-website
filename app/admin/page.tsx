@@ -9,7 +9,7 @@ export default function Admin() {
   const [portfolios, setPortfolios] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
-    title: '', client: '', category: 'hospitality', type: '', year: '2025'
+    title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: ''
   })
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
@@ -44,7 +44,7 @@ export default function Admin() {
       if (thumbnailFile) thumbnail_url = await uploadFile(thumbnailFile, 'thumbnails')
       await supabase.from('portfolio').insert([{ ...form, media_url, thumbnail_url }])
       alert('Added!')
-      setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
+      setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: '' })
       setMediaFile(null)
       setThumbnailFile(null)
       fetchPortfolios()
@@ -101,6 +101,11 @@ export default function Admin() {
               <option value="production">Production</option>
             </select>
           </div>
+          <div style={{marginBottom:'1.5rem'}}>
+            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Video URL (YouTube / Vimeo / 직접 링크)</label>
+            <input type="text" placeholder="https://youtube.com/watch?v=..." value={form.video_url} onChange={e => setForm({...form, video_url: e.target.value})}
+              style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}/>
+          </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'2rem'}}>
             <div>
               <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Media File (video/image)</label>
@@ -126,6 +131,7 @@ export default function Admin() {
               <div>
                 <p style={{fontWeight:500,fontSize:'15px'}}>{p.client}</p>
                 <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
+                {p.video_url && <p style={{fontSize:'11px',color:'#aaa',marginTop:'2px'}}>🎥 {p.video_url}</p>}
               </div>
               <button onClick={() => deletePortfolio(p.id)}
                 style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
