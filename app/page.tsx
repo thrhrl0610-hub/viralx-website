@@ -102,7 +102,7 @@ export default function Home() {
         .w-client{font-size:21px;font-weight:500;letter-spacing:-0.01em}
         .w-type{font-size:13px;color:var(--mid)}
         .w-yr{font-size:13px;color:var(--mid)}
-        .wa{font-size:16px;color:var(--mid);text-align:right;transition:transform 0.2s}
+        .wa{font-size:16px;color:var(--mid);text-align:right;transition:transform 0.2s;font-family:'DM Sans',sans-serif;-webkit-text-stroke:0;text-rendering:auto}
         .w-item:hover .wa{transform:translateX(3px)}
 
         /* STATEMENT */
