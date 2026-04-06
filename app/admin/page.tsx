@@ -80,15 +80,17 @@ export default function Admin() {
   }
 
   const movePortfolio = async (index: number, direction: 'up' | 'down') => {
-    const newPortfolios = [...portfolios]
     const swapIndex = direction === 'up' ? index - 1 : index + 1
-    if (swapIndex < 0 || swapIndex >= newPortfolios.length) return
+    if (swapIndex < 0 || swapIndex >= portfolios.length) return
 
-    const a = newPortfolios[index]
-    const b = newPortfolios[swapIndex]
+    const a = portfolios[index]
+    const b = portfolios[swapIndex]
 
-    await supabase.from('portfolio').update({ sort_order: b.sort_order ?? swapIndex }).eq('id', a.id)
-    await supabase.from('portfolio').update({ sort_order: a.sort_order ?? index }).eq('id', b.id)
+    const aOrder = a.sort_order ?? index
+    const bOrder = b.sort_order ?? swapIndex
+
+    await supabase.from('portfolio').update({ sort_order: bOrder }).eq('id', a.id)
+    await supabase.from('portfolio').update({ sort_order: aOrder }).eq('id', b.id)
 
     fetchPortfolios()
   }
