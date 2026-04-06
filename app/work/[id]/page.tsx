@@ -53,7 +53,7 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
-        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem}
+        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
         .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden}
         .media-card img{width:100%;height:100%;object-fit:cover;display:block}
         .media-card:hover .play-overlay{opacity:1}
@@ -76,37 +76,37 @@ export default function WorkDetail() {
         <span style={{color:'#fff',fontWeight:500,fontSize:'16px',fontFamily:'sans-serif'}}>ViralX</span>
       </div>
 
-      <div style={{padding:'2rem 1rem',maxWidth:'1100px',margin:'0 auto'}}>
+      <div style={{padding:'2rem 2.5rem',maxWidth:'1100px',margin:'0 auto'}}>
         <p style={{fontSize:'11px',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--mid)',marginBottom:'0.8rem'}}>{portfolio.category} · {portfolio.year}</p>
         <h1 style={{fontFamily:'Anton',fontSize:'clamp(48px,8vw,96px)',textTransform:'uppercase',lineHeight:0.93,marginBottom:'1rem'}}>{portfolio.client}</h1>
         {portfolio.type && <p style={{fontSize:'14px',color:'var(--mid)',marginBottom:'2rem'}}>{portfolio.type}</p>}
-
-        {medias.length === 0 ? (
-          <p style={{color:'var(--mid)',fontSize:'14px'}}>No media uploaded yet.</p>
-        ) : (
-          <div className="media-grid">
-            {medias.map((m, i) => (
-              <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
-                {m.type === 'image' ? (
-                  <img src={m.url} alt=""/>
-                ) : m.thumbnail_url ? (
-                  <>
-                    <img src={m.thumbnail_url} alt=""/>
-                    <div className="play-overlay">
-                      <span style={{fontSize:'40px',color:'#fff'}}>▶</span>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'0.8rem'}}>
-                    <span style={{fontSize:'32px',color:'#fff'}}>▶</span>
-                    <span style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(255,255,255,0.4)'}}>Play video {i+1}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+
+      {medias.length === 0 ? (
+        <p style={{color:'var(--mid)',fontSize:'14px',padding:'0 2.5rem'}}>No media uploaded yet.</p>
+      ) : (
+        <div className="media-grid">
+          {medias.map((m, i) => (
+            <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
+              {m.type === 'image' ? (
+                <img src={m.url} alt=""/>
+              ) : m.thumbnail_url ? (
+                <>
+                  <img src={m.thumbnail_url} alt=""/>
+                  <div className="play-overlay">
+                    <span style={{fontSize:'40px',color:'#fff'}}>▶</span>
+                  </div>
+                </>
+              ) : (
+                <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'0.8rem'}}>
+                  <span style={{fontSize:'32px',color:'#fff'}}>▶</span>
+                  <span style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(255,255,255,0.4)'}}>Play video {i+1}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   )
 }
