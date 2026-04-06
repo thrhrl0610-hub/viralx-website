@@ -15,6 +15,7 @@ export default function Admin() {
   const [mediaFiles, setMediaFiles] = useState<{file: File, type: 'video'|'image', thumbnailFile?: File}[]>([])
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [existingMedias, setExistingMedias] = useState<any[]>([])
+  const [existingThumbnails, setExistingThumbnails] = useState<{[id: number]: File}>({})
 
   const login = () => {
     if (password === 'viralx2024') setIsLoggedIn(true)
@@ -52,6 +53,12 @@ export default function Admin() {
         portfolioId = data?.[0]?.id
       }
 
+      // 기존 미디어 썸네일 업데이트
+      for (const [mediaId, file] of Object.entries(existingThumbnails)) {
+        const url = await uploadFile(file as File, 'thumbnails')
+        await supabase.from('portfolio_media').update({ thumbnail_url: url }).eq('id', mediaId)
+      }
+
       for (let i = 0; i < mediaFiles.length; i++) {
         const m = mediaFiles[i]
         const url = await uploadFile(m.file, 'media')
@@ -72,6 +79,7 @@ export default function Admin() {
       setMediaFiles([])
       setThumbnailFile(null)
       setExistingMedias([])
+      setExistingThumbnails({})
       fetchPortfolios()
     } catch (e) {
       alert('Error: ' + e)
@@ -82,16 +90,12 @@ export default function Admin() {
   const movePortfolio = async (index: number, direction: 'up' | 'down') => {
     const swapIndex = direction === 'up' ? index - 1 : index + 1
     if (swapIndex < 0 || swapIndex >= portfolios.length) return
-
     const a = portfolios[index]
     const b = portfolios[swapIndex]
-
     const aOrder = a.sort_order ?? index
     const bOrder = b.sort_order ?? swapIndex
-
     await supabase.from('portfolio').update({ sort_order: bOrder }).eq('id', a.id)
     await supabase.from('portfolio').update({ sort_order: aOrder }).eq('id', b.id)
-
     fetchPortfolios()
   }
 
@@ -107,6 +111,7 @@ export default function Admin() {
     const { data } = await supabase.from('portfolio_media').select('*').eq('portfolio_id', p.id).order('sort_order')
     setExistingMedias(data || [])
     setMediaFiles([])
+    setExistingThumbnails({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -116,6 +121,7 @@ export default function Admin() {
     setMediaFiles([])
     setThumbnailFile(null)
     setExistingMedias([])
+    setExistingThumbnails({})
   }
 
   const deleteMedia = async (id: number) => {
@@ -199,12 +205,25 @@ export default function Admin() {
             <div style={{marginBottom:'1.5rem'}}>
               <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
               {existingMedias.map((m, i) => (
-                <div key={m.id} style={{padding:'0.8rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div key={m.id} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
                     <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
                     <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
                   </div>
-                  {m.thumbnail_url && <p style={{fontSize:'11px',color:'#aaa',marginTop:'4px'}}>썸네일 설정됨 ✓</p>}
+                  {m.type === 'video' && (
+                    <div>
+                      <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>
+                        {m.thumbnail_url ? '썸네일 변경' : '썸네일 추가'}
+                      </label>
+                      <input type="file" accept="image/*" onChange={e => {
+                        if (e.target.files?.[0]) {
+                          setExistingThumbnails(prev => ({...prev, [m.id]: e.target.files![0]}))
+                        }
+                      }} style={{fontSize:'12px',color:'#888'}}/>
+                      {existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{existingThumbnails[m.id].name}</p>}
+                      {m.thumbnail_url && !existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>썸네일 설정됨 ✓</p>}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
