@@ -276,7 +276,11 @@ export default function Home() {
                 <span className="w-client">{c}</span>
                 <span className="w-type">Video Production</span>
                 <span className="w-yr">2025</span>
-                <span className="wa">↗</span>
+                <span className="wa">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+</span>
               </a>
             ))
           )}
