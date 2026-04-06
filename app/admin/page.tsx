@@ -10,10 +10,11 @@ export default function Admin() {
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
-    title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: ''
+    title: '', client: '', category: 'hospitality', type: '', year: '2025'
   })
-  const [mediaFile, setMediaFile] = useState<File | null>(null)
+  const [mediaFiles, setMediaFiles] = useState<{file: File, type: 'video'|'image', url?: string}[]>([])
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [existingMedias, setExistingMedias] = useState<any[]>([])
 
   const login = () => {
     if (password === 'viralx2024') setIsLoggedIn(true)
@@ -29,7 +30,7 @@ export default function Admin() {
 
   const uploadFile = async (file: File, folder: string) => {
     const ext = file.name.split('.').pop()
-    const name = `${folder}/${Date.now()}.${ext}`
+    const name = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabaseAdmin.storage.from('portfolio-media').upload(name, file)
     if (error) throw error
     const { data } = supabaseAdmin.storage.from('portfolio-media').getPublicUrl(name)
@@ -39,22 +40,36 @@ export default function Admin() {
   const handleSubmit = async () => {
     setUploading(true)
     try {
-      let media_url = editingId ? portfolios.find(p => p.id === editingId)?.media_url || '' : ''
       let thumbnail_url = editingId ? portfolios.find(p => p.id === editingId)?.thumbnail_url || '' : ''
-      if (mediaFile) media_url = await uploadFile(mediaFile, 'media')
       if (thumbnailFile) thumbnail_url = await uploadFile(thumbnailFile, 'thumbnails')
 
+      let portfolioId = editingId
       if (editingId) {
-        await supabase.from('portfolio').update({ ...form, media_url, thumbnail_url }).eq('id', editingId)
-        alert('Updated!')
-        setEditingId(null)
+        await supabase.from('portfolio').update({ ...form, thumbnail_url }).eq('id', editingId)
       } else {
-        await supabase.from('portfolio').insert([{ ...form, media_url, thumbnail_url }])
-        alert('Added!')
+        const { data } = await supabase.from('portfolio').insert([{ ...form, thumbnail_url }]).select()
+        portfolioId = data?.[0]?.id
       }
-      setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: '' })
-      setMediaFile(null)
+
+      // 새 미디어 파일 업로드
+      for (let i = 0; i < mediaFiles.length; i++) {
+        const m = mediaFiles[i]
+        let url = m.url || ''
+        if (m.file) url = await uploadFile(m.file, 'media')
+        await supabase.from('portfolio_media').insert([{
+          portfolio_id: portfolioId,
+          url,
+          type: m.type,
+          sort_order: (existingMedias.length + i)
+        }])
+      }
+
+      alert(editingId ? 'Updated!' : 'Added!')
+      setEditingId(null)
+      setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
+      setMediaFiles([])
       setThumbnailFile(null)
+      setExistingMedias([])
       fetchPortfolios()
     } catch (e) {
       alert('Error: ' + e)
@@ -62,7 +77,7 @@ export default function Admin() {
     setUploading(false)
   }
 
-  const startEdit = (p: any) => {
+  const startEdit = async (p: any) => {
     setEditingId(p.id)
     setForm({
       title: p.title || '',
@@ -70,21 +85,35 @@ export default function Admin() {
       category: p.category || 'hospitality',
       type: p.type || '',
       year: p.year || '2025',
-      video_url: p.video_url || ''
     })
+    const { data } = await supabase.from('portfolio_media').select('*').eq('portfolio_id', p.id).order('sort_order')
+    setExistingMedias(data || [])
+    setMediaFiles([])
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const cancelEdit = () => {
     setEditingId(null)
-    setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: '' })
-    setMediaFile(null)
+    setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
+    setMediaFiles([])
     setThumbnailFile(null)
+    setExistingMedias([])
+  }
+
+  const deleteMedia = async (id: number) => {
+    await supabase.from('portfolio_media').delete().eq('id', id)
+    setExistingMedias(existingMedias.filter(m => m.id !== id))
   }
 
   const deletePortfolio = async (id: string) => {
+    await supabase.from('portfolio_media').delete().eq('portfolio_id', id)
     await supabase.from('portfolio').delete().eq('id', id)
     fetchPortfolios()
+  }
+
+  const addMediaFile = (file: File) => {
+    const type = file.type.startsWith('video') ? 'video' : 'image'
+    setMediaFiles(prev => [...prev, { file, type }])
   }
 
   if (!isLoggedIn) return (
@@ -113,11 +142,10 @@ export default function Admin() {
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
             <h2 style={{fontSize:'18px',fontWeight:500}}>{editingId ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</h2>
             {editingId && (
-              <button onClick={cancelEdit} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
-                Cancel
-              </button>
+              <button onClick={cancelEdit} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Cancel</button>
             )}
           </div>
+
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'1.5rem'}}>
             {[['Title','title'],['Client','client'],['Type (e.g. Video · Social)','type'],['Year','year']].map(([label, key]) => (
               <div key={key}>
@@ -127,6 +155,7 @@ export default function Admin() {
               </div>
             ))}
           </div>
+
           <div style={{marginBottom:'1.5rem'}}>
             <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Category</label>
             <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
@@ -136,23 +165,45 @@ export default function Admin() {
               <option value="production">Production</option>
             </select>
           </div>
+
           <div style={{marginBottom:'1.5rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Video URL (YouTube / Vimeo / 직접 링크)</label>
-            <input type="text" placeholder="https://youtube.com/watch?v=..." value={form.video_url} onChange={e => setForm({...form, video_url: e.target.value})}
-              style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}/>
+            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Thumbnail Image</label>
+            <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && setThumbnailFile(e.target.files[0])}
+              style={{fontSize:'13px',color:'#888'}}/>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'2rem'}}>
-            <div>
-              <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Media File (video/image)</label>
-              <input type="file" accept="video/*,image/*" onChange={e => setMediaFile(e.target.files?.[0] || null)}
-                style={{fontSize:'13px',color:'#888'}}/>
+
+          {/* 기존 미디어 */}
+          {existingMedias.length > 0 && (
+            <div style={{marginBottom:'1.5rem'}}>
+              <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
+              {existingMedias.map((m, i) => (
+                <div key={m.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.6rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
+                  <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
+                  <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+                </div>
+              ))}
             </div>
-            <div>
-              <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Thumbnail Image</label>
-              <input type="file" accept="image/*" onChange={e => setThumbnailFile(e.target.files?.[0] || null)}
-                style={{fontSize:'13px',color:'#888'}}/>
-            </div>
+          )}
+
+          {/* 새 미디어 추가 */}
+          <div style={{marginBottom:'2rem'}}>
+            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files (video/image, 여러 개 가능)</label>
+            <input type="file" accept="video/*,image/*" multiple onChange={e => {
+              if (e.target.files) Array.from(e.target.files).forEach(addMediaFile)
+            }} style={{fontSize:'13px',color:'#888',marginBottom:'0.8rem'}}/>
+            {mediaFiles.length > 0 && (
+              <div>
+                {mediaFiles.map((m, i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.4rem 0',fontSize:'13px',color:'#555'}}>
+                    <span>{m.type} — {m.file.name.slice(0,40)}</span>
+                    <button onClick={() => setMediaFiles(mediaFiles.filter((_,j) => j !== i))}
+                      style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
           <button onClick={handleSubmit} disabled={uploading}
             style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'1rem 2rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',opacity:uploading?0.5:1}}>
             {uploading ? 'Uploading...' : editingId ? 'Save Changes' : 'Add to Portfolio'}
@@ -166,7 +217,6 @@ export default function Admin() {
               <div>
                 <p style={{fontWeight:500,fontSize:'15px'}}>{p.client}</p>
                 <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
-                {p.video_url && <p style={{fontSize:'11px',color:'#aaa',marginTop:'2px'}}>🎥 {p.video_url}</p>}
               </div>
               <div style={{display:'flex',gap:'0.5rem'}}>
                 <button onClick={() => startEdit(p)}
