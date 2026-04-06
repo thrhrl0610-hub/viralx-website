@@ -22,7 +22,7 @@ export default function Admin() {
   }
 
   const fetchPortfolios = async () => {
-    const { data } = await supabase.from('portfolio').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('portfolio').select('*').order('sort_order', { ascending: true })
     if (data) setPortfolios(data)
   }
 
@@ -47,7 +47,8 @@ export default function Admin() {
       if (editingId) {
         await supabase.from('portfolio').update({ ...form, thumbnail_url }).eq('id', editingId)
       } else {
-        const { data } = await supabase.from('portfolio').insert([{ ...form, thumbnail_url }]).select()
+        const maxOrder = portfolios.length > 0 ? Math.max(...portfolios.map(p => p.sort_order || 0)) + 1 : 0
+        const { data } = await supabase.from('portfolio').insert([{ ...form, thumbnail_url, sort_order: maxOrder }]).select()
         portfolioId = data?.[0]?.id
       }
 
@@ -76,6 +77,20 @@ export default function Admin() {
       alert('Error: ' + e)
     }
     setUploading(false)
+  }
+
+  const movePortfolio = async (index: number, direction: 'up' | 'down') => {
+    const newPortfolios = [...portfolios]
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= newPortfolios.length) return
+
+    const a = newPortfolios[index]
+    const b = newPortfolios[swapIndex]
+
+    await supabase.from('portfolio').update({ sort_order: b.sort_order ?? swapIndex }).eq('id', a.id)
+    await supabase.from('portfolio').update({ sort_order: a.sort_order ?? index }).eq('id', b.id)
+
+    fetchPortfolios()
   }
 
   const startEdit = async (p: any) => {
@@ -187,9 +202,7 @@ export default function Admin() {
                     <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
                     <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
                   </div>
-                  {m.thumbnail_url && (
-                    <p style={{fontSize:'11px',color:'#aaa',marginTop:'4px'}}>썸네일 설정됨 ✓</p>
-                  )}
+                  {m.thumbnail_url && <p style={{fontSize:'11px',color:'#aaa',marginTop:'4px'}}>썸네일 설정됨 ✓</p>}
                 </div>
               ))}
             </div>
@@ -231,13 +244,19 @@ export default function Admin() {
 
         <div style={{background:'#fff',padding:'2.5rem',border:'1px solid rgba(0,0,0,0.08)'}}>
           <h2 style={{fontSize:'18px',fontWeight:500,marginBottom:'2rem'}}>Portfolio ({portfolios.length})</h2>
-          {portfolios.map(p => (
+          {portfolios.map((p, index) => (
             <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1.2rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
               <div>
                 <p style={{fontWeight:500,fontSize:'15px'}}>{p.client}</p>
                 <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
               </div>
-              <div style={{display:'flex',gap:'0.5rem'}}>
+              <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
+                <div style={{display:'flex',flexDirection:'column',gap:'2px'}}>
+                  <button onClick={() => movePortfolio(index, 'up')} disabled={index === 0}
+                    style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===0?0.3:1}}>↑</button>
+                  <button onClick={() => movePortfolio(index, 'down')} disabled={index === portfolios.length - 1}
+                    style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===portfolios.length-1?0.3:1}}>↓</button>
+                </div>
                 <button onClick={() => startEdit(p)}
                   style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>
                   Edit
