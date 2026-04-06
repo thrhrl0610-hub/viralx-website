@@ -268,7 +268,7 @@ export default function Home() {
               <span className="w-client">{p.client}</span>
               <span className="w-type">{p.type}</span>
               <span className="w-yr">{p.year}</span>
-              <span className="wa">↗</span>
+              <span className="wa" style={{fontFamily:'sans-serif',fontSize:'14px'}}>↗</span>
             </a>
           )) : (
             ['BCG Group','Harcourts','Victoria Sushi','Allgot','Ray White','F&B Campaign'].map((c,i) => (
