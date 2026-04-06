@@ -53,10 +53,14 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
+        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
         .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden}
         .media-card img{width:100%;height:100%;object-fit:cover;display:block}
         .media-card:hover .play-overlay{opacity:1}
         .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);opacity:0;transition:opacity 0.2s}
+        @media(max-width:768px){
+          .media-grid{grid-template-columns:repeat(2,1fr);gap:0.6rem}
+        }
       `}</style>
 
       {activeVideo && (
@@ -83,7 +87,7 @@ export default function WorkDetail() {
         {medias.length === 0 ? (
           <p style={{color:'var(--mid)',fontSize:'14px'}}>No media uploaded yet.</p>
         ) : (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'1.5rem'}}>
+          <div className="media-grid">
             {medias.map((m, i) => (
               <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
                 {m.type === 'image' ? (
