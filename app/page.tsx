@@ -190,7 +190,7 @@ export default function Home() {
           .svc-item{padding:2rem 1.5rem}
           #contact{grid-template-columns:1fr}
           .ct-l{border-right:none;border-bottom:1px solid rgba(0,0,0,0.08);padding:3rem 1.5rem}
-          .ct-l h2{font-size:36px}
+          .ct-l h2{font-size:36px;margin-bottom:2rem}
           .ct-r{padding:3rem 1.5rem}
           .f-row{grid-template-columns:1fr}
           footer{flex-direction:column;gap:1.2rem;text-align:center;padding:2rem 1.5rem}
