@@ -53,7 +53,7 @@ export default function WorkDetail() {
         .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
         .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
         .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
-        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;padding:0 2.5rem;max-width:1100px;margin:0 auto}
+        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;padding:0 2.5rem 4rem;max-width:1100px;margin:0 auto}
         .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden;border-radius:2px}
         .media-card img{width:100%;height:100%;object-fit:cover;display:block}
         .media-card:hover .play-overlay{opacity:1}
