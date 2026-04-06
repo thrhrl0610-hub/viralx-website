@@ -329,7 +329,7 @@ export default function Home() {
         <div className="ct-l">
           <div>
             <span className="sec-label">Get in touch</span>
-            <h2>Start a<br/>project.</h2>
+            <h2>Start a project.</h2>
           </div>
           <div className="ct-details">
             <div className="ct-row"><span className="ct-key">Location</span><span className="ct-val">155 The Strand, Parnell, Auckland</span></div>
