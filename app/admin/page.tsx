@@ -8,6 +8,7 @@ export default function Admin() {
   const [password, setPassword] = useState('')
   const [portfolios, setPortfolios] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
     title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: ''
   })
@@ -38,12 +39,19 @@ export default function Admin() {
   const handleSubmit = async () => {
     setUploading(true)
     try {
-      let media_url = ''
-      let thumbnail_url = ''
+      let media_url = editingId ? portfolios.find(p => p.id === editingId)?.media_url || '' : ''
+      let thumbnail_url = editingId ? portfolios.find(p => p.id === editingId)?.thumbnail_url || '' : ''
       if (mediaFile) media_url = await uploadFile(mediaFile, 'media')
       if (thumbnailFile) thumbnail_url = await uploadFile(thumbnailFile, 'thumbnails')
-      await supabase.from('portfolio').insert([{ ...form, media_url, thumbnail_url }])
-      alert('Added!')
+
+      if (editingId) {
+        await supabase.from('portfolio').update({ ...form, media_url, thumbnail_url }).eq('id', editingId)
+        alert('Updated!')
+        setEditingId(null)
+      } else {
+        await supabase.from('portfolio').insert([{ ...form, media_url, thumbnail_url }])
+        alert('Added!')
+      }
       setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: '' })
       setMediaFile(null)
       setThumbnailFile(null)
@@ -52,6 +60,26 @@ export default function Admin() {
       alert('Error: ' + e)
     }
     setUploading(false)
+  }
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id)
+    setForm({
+      title: p.title || '',
+      client: p.client || '',
+      category: p.category || 'hospitality',
+      type: p.type || '',
+      year: p.year || '2025',
+      video_url: p.video_url || ''
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025', video_url: '' })
+    setMediaFile(null)
+    setThumbnailFile(null)
   }
 
   const deletePortfolio = async (id: string) => {
@@ -82,7 +110,14 @@ export default function Admin() {
 
       <div style={{maxWidth:'900px',margin:'3rem auto',padding:'0 2rem'}}>
         <div style={{background:'#fff',padding:'2.5rem',marginBottom:'2rem',border:'1px solid rgba(0,0,0,0.08)'}}>
-          <h2 style={{fontSize:'18px',fontWeight:500,marginBottom:'2rem'}}>Add Portfolio Item</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
+            <h2 style={{fontSize:'18px',fontWeight:500}}>{editingId ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</h2>
+            {editingId && (
+              <button onClick={cancelEdit} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
+                Cancel
+              </button>
+            )}
+          </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'1.5rem'}}>
             {[['Title','title'],['Client','client'],['Type (e.g. Video · Social)','type'],['Year','year']].map(([label, key]) => (
               <div key={key}>
@@ -120,7 +155,7 @@ export default function Admin() {
           </div>
           <button onClick={handleSubmit} disabled={uploading}
             style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'1rem 2rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',opacity:uploading?0.5:1}}>
-            {uploading ? 'Uploading...' : 'Add to Portfolio'}
+            {uploading ? 'Uploading...' : editingId ? 'Save Changes' : 'Add to Portfolio'}
           </button>
         </div>
 
@@ -133,10 +168,16 @@ export default function Admin() {
                 <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
                 {p.video_url && <p style={{fontSize:'11px',color:'#aaa',marginTop:'2px'}}>🎥 {p.video_url}</p>}
               </div>
-              <button onClick={() => deletePortfolio(p.id)}
-                style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
-                Delete
-              </button>
+              <div style={{display:'flex',gap:'0.5rem'}}>
+                <button onClick={() => startEdit(p)}
+                  style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>
+                  Edit
+                </button>
+                <button onClick={() => deletePortfolio(p.id)}
+                  style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
           {portfolios.length === 0 && <p style={{color:'#888',fontSize:'14px'}}>No portfolio items yet.</p>}
