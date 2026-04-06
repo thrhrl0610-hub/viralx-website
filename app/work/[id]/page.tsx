@@ -62,6 +62,7 @@ export default function WorkDetail() {
         @media(max-width:768px){
           .info-wrap{padding:1.5rem 1rem 1rem}
           .media-grid{padding:0 0.3rem 1.5rem;gap:0.3rem;max-width:100%}
+          .play-overlay{display:none}
         }
       `}</style>
 
@@ -99,13 +100,18 @@ export default function WorkDetail() {
                 <>
                   <img src={m.thumbnail_url} alt=""/>
                   <div className="play-overlay">
-                    <span className="play-icon">▶</span>
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="16" cy="16" r="15" stroke="white" strokeWidth="1.5" opacity="0.8"/>
+                      <path d="M13 10.5L22 16L13 21.5V10.5Z" fill="white" opacity="0.9"/>
+                    </svg>
                   </div>
                 </>
               ) : (
                 <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'0.8rem'}}>
-                  <span style={{fontSize:'32px',color:'#fff'}}>▶</span>
-                  <span style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'rgba(255,255,255,0.4)'}}>Play video {i+1}</span>
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="16" cy="16" r="15" stroke="white" strokeWidth="1.5" opacity="0.8"/>
+                    <path d="M13 10.5L22 16L13 21.5V10.5Z" fill="white" opacity="0.9"/>
+                  </svg>
                 </div>
               )}
             </div>
