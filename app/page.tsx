@@ -12,7 +12,7 @@ export default function Home() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    supabase.from('portfolio').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+    supabase.from('portfolio').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
       if (data) setPortfolios(data)
     })
     const t1 = setTimeout(() => setIntroFade(true), 2200)
@@ -169,7 +169,7 @@ export default function Home() {
           .nav-links{display:none}
           .nav-cta{display:none}
           .hamburger{display:flex}
-          #hero{padding:3rem 1.5rem 2.5rem;min-height:85vh}
+          #hero{padding:3rem 1.5rem 2.5rem;min-height:60vh}
           .hero-foot{flex-direction:column;gap:1.2rem;align-items:flex-start}
           .hero-loc{display:none}
           #clients{padding:1.5rem 0}
@@ -190,6 +190,7 @@ export default function Home() {
           .svc-item{padding:2rem 1.5rem}
           #contact{grid-template-columns:1fr}
           .ct-l{border-right:none;border-bottom:1px solid rgba(0,0,0,0.08);padding:3rem 1.5rem}
+          .ct-l h2{font-size:36px}
           .ct-r{padding:3rem 1.5rem}
           .f-row{grid-template-columns:1fr}
           footer{flex-direction:column;gap:1.2rem;text-align:center;padding:2rem 1.5rem}
