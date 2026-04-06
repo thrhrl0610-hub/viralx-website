@@ -320,7 +320,7 @@ export default function Home() {
             <span className="sec-label">What we do</span>
             <h2>Seven<br/>services.</h2>
           </div>
-          <div className="svc-intro"><p>We don&apos;t follow trends — we&apos;re already living them. Content built for the scroll, the share, the save.</p></div>
+          <div className="svc-intro"><p>We don&apos;t follow trends. We&apos;re already living them. Content built for the scroll, the share, the save.</p></div>
         </div>
         <div className="svc-grid">
           {[
