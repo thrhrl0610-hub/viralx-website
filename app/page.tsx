@@ -264,7 +264,7 @@ export default function Home() {
         </div>
         <div>
           {portfolios.length > 0 ? portfolios.map(p => (
-            <a key={p.id} className="w-item" href={`/work/${p.id}`}>
+            <a key={p.id} className="w-item" href={p.id === '1f0ff87c-4fd3-4e8f-964d-247f6253cb19' ? '/hospitality' : `/work/${p.id}`}>
               <span className="w-client">{p.client}</span>
               <span className="w-type">{p.type}</span>
               <span className="w-yr">{p.year}</span>
