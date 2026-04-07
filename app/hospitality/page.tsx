@@ -36,7 +36,7 @@ export default function HospitalityPage() {
         <span style={{color:'#fff',fontWeight:500,fontSize:'16px',fontFamily:'sans-serif'}}>ViralX</span>
       </div>
 
-      <div style={{padding:'3rem 2.5rem 1.5rem'}}>
+      <div style={{padding:'3rem 2.5rem 1.5rem',maxWidth:'1100px',margin:'0 auto'}}>
         <p style={{fontSize:'11px',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--mid)',marginBottom:'0.8rem'}}>Hospitality · 2025</p>
         <h1 style={{fontFamily:'Anton',fontSize:'clamp(36px,8vw,96px)',textTransform:'uppercase',lineHeight:0.93,marginBottom:'1rem'}}>Hospitality</h1>
         <p style={{fontSize:'14px',color:'var(--mid)',marginBottom:'3rem'}}>F&B brands we&apos;ve worked with</p>
