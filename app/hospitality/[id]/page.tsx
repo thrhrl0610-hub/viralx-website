@@ -1,0 +1,120 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+
+export default function BrandDetail() {
+  const { id } = useParams()
+  const router = useRouter()
+  const [brand, setBrand] = useState<any>(null)
+  const [medias, setMedias] = useState<any[]>([])
+  const [activeVideo, setActiveVideo] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.from('hospitality_brands').select('*').eq('id', id).single().then(({ data }) => {
+      if (data) setBrand(data)
+    })
+    supabase.from('hospitality_media').select('*').eq('brand_id', id).order('sort_order').then(({ data }) => {
+      if (data) setMedias(data)
+    })
+  }, [id])
+
+  function getEmbedUrl(url: string) {
+    if (!url) return ''
+    if (url.includes('youtube.com/watch')) {
+      const vid = new URL(url).searchParams.get('v')
+      return `https://www.youtube.com/embed/${vid}?autoplay=1`
+    }
+    if (url.includes('youtu.be/')) {
+      const vid = url.split('youtu.be/')[1].split('?')[0]
+      return `https://www.youtube.com/embed/${vid}?autoplay=1`
+    }
+    if (url.includes('vimeo.com/')) {
+      const vid = url.split('vimeo.com/')[1].split('?')[0]
+      return `https://player.vimeo.com/video/${vid}?autoplay=1`
+    }
+    return url
+  }
+
+  if (!brand) return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0a0a0a'}}>
+      <p style={{color:'#fff',fontFamily:'sans-serif'}}>Loading...</p>
+    </div>
+  )
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--black:#0a0a0a;--white:#f5f5f3;--mid:#888}
+        html,body{background:var(--white);font-family:'DM Sans',sans-serif}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;display:flex;align-items:center;justify-content:center}
+        .modal-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;background:none;border:none;color:#fff;z-index:1001}
+        .modal-iframe{width:90vw;height:50.625vw;max-height:85vh;max-width:calc(85vh * 16/9);border:none}
+        .modal-video{width:90vw;max-height:85vh;max-width:calc(85vh * 16/9)}
+        .info-wrap{padding:3rem 2.5rem 1.5rem;max-width:1100px;margin:0 auto}
+        .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;padding:0 2.5rem 3rem}
+        .media-card{cursor:pointer;background:#0a0a0a;aspect-ratio:4/3;position:relative;overflow:hidden;border-radius:2px}
+        .media-card img{width:100%;height:100%;object-fit:cover;display:block}
+        .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);opacity:1}
+        @media(max-width:768px){
+          .info-wrap{padding:1.5rem 1rem 1rem}
+          .media-grid{grid-template-columns:1fr;padding:0 1rem 1.5rem;gap:0.8rem}
+        }
+      `}</style>
+
+      {activeVideo && (
+        <div className="modal-overlay" onClick={() => setActiveVideo(null)}>
+          <button className="modal-close" onClick={() => setActiveVideo(null)}>✕</button>
+          {activeVideo.includes('supabase') || activeVideo.endsWith('.mp4') || activeVideo.endsWith('.mov') ? (
+            <video className="modal-video" src={activeVideo} autoPlay controls onClick={e => e.stopPropagation()}/>
+          ) : (
+            <iframe className="modal-iframe" src={getEmbedUrl(activeVideo)} allow="autoplay; fullscreen" allowFullScreen/>
+          )}
+        </div>
+      )}
+
+      <div style={{background:'#0a0a0a',padding:'1.2rem 2.5rem',display:'flex',alignItems:'center',gap:'1.5rem'}}>
+        <button onClick={() => router.back()} style={{background:'transparent',border:'none',color:'#fff',fontSize:'20px',cursor:'pointer'}}>←</button>
+        <span style={{color:'#fff',fontWeight:500,fontSize:'16px',fontFamily:'sans-serif'}}>ViralX</span>
+      </div>
+
+      <div className="info-wrap">
+        <p style={{fontSize:'11px',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--mid)',marginBottom:'0.8rem'}}>Hospitality · 2025</p>
+        <h1 style={{fontFamily:'Anton',fontSize:'clamp(36px,8vw,96px)',textTransform:'uppercase',lineHeight:0.93,marginBottom:'1rem'}}>{brand.name}</h1>
+      </div>
+
+      {medias.length === 0 ? (
+        <p style={{color:'var(--mid)',fontSize:'14px',padding:'0 2.5rem'}}>No media uploaded yet.</p>
+      ) : (
+        <div className="media-grid">
+          {medias.map((m) => (
+            <div key={m.id} className="media-card" onClick={() => setActiveVideo(m.url)}>
+              {m.type === 'image' ? (
+                <img src={m.url} alt=""/>
+              ) : m.thumbnail_url ? (
+                <>
+                  <img src={m.thumbnail_url} alt=""/>
+                  <div className="play-overlay">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="1.5" opacity="0.9"/>
+                      <path d="M20 16L34 24L20 32V16Z" fill="white" opacity="0.95"/>
+                    </svg>
+                  </div>
+                </>
+              ) : (
+                <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="1.5" opacity="0.9"/>
+                    <path d="M20 16L34 24L20 32V16Z" fill="white" opacity="0.95"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
