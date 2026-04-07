@@ -6,16 +6,26 @@ import { supabase, supabaseAdmin } from '@/lib/supabase'
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [password, setPassword] = useState('')
+  const [tab, setTab] = useState<'portfolio'|'hospitality'>('portfolio')
+
+  // Portfolio states
   const [portfolios, setPortfolios] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState({
-    title: '', client: '', category: 'hospitality', type: '', year: '2025'
-  })
+  const [form, setForm] = useState({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
   const [mediaFiles, setMediaFiles] = useState<{file: File, type: 'video'|'image', thumbnailFile?: File}[]>([])
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [existingMedias, setExistingMedias] = useState<any[]>([])
   const [existingThumbnails, setExistingThumbnails] = useState<{[id: number]: File}>({})
+
+  // Hospitality states
+  const [brands, setBrands] = useState<any[]>([])
+  const [brandUploading, setBrandUploading] = useState(false)
+  const [editingBrandId, setEditingBrandId] = useState<string | null>(null)
+  const [brandName, setBrandName] = useState('')
+  const [brandMediaFiles, setBrandMediaFiles] = useState<{file: File, type: 'video'|'image', thumbnailFile?: File}[]>([])
+  const [existingBrandMedias, setExistingBrandMedias] = useState<any[]>([])
+  const [existingBrandThumbnails, setExistingBrandThumbnails] = useState<{[id: string]: File}>({})
 
   const login = () => {
     if (password === 'viralx2024') setIsLoggedIn(true)
@@ -27,7 +37,14 @@ export default function Admin() {
     if (data) setPortfolios(data)
   }
 
-  useEffect(() => { if (isLoggedIn) fetchPortfolios() }, [isLoggedIn])
+  const fetchBrands = async () => {
+    const { data } = await supabase.from('hospitality_brands').select('*').order('sort_order')
+    if (data) setBrands(data)
+  }
+
+  useEffect(() => {
+    if (isLoggedIn) { fetchPortfolios(); fetchBrands() }
+  }, [isLoggedIn])
 
   const uploadFile = async (file: File, folder: string) => {
     const ext = file.name.split('.').pop()
@@ -38,12 +55,12 @@ export default function Admin() {
     return data.publicUrl
   }
 
+  // Portfolio functions
   const handleSubmit = async () => {
     setUploading(true)
     try {
       let thumbnail_url = editingId ? portfolios.find(p => p.id === editingId)?.thumbnail_url || '' : ''
       if (thumbnailFile) thumbnail_url = await uploadFile(thumbnailFile, 'thumbnails')
-
       let portfolioId = editingId
       if (editingId) {
         await supabase.from('portfolio').update({ ...form, thumbnail_url }).eq('id', editingId)
@@ -52,76 +69,47 @@ export default function Admin() {
         const { data } = await supabase.from('portfolio').insert([{ ...form, thumbnail_url, sort_order: maxOrder }]).select()
         portfolioId = data?.[0]?.id
       }
-
-      // 기존 미디어 썸네일 업데이트
       for (const [mediaId, file] of Object.entries(existingThumbnails)) {
         const url = await uploadFile(file as File, 'thumbnails')
         await supabase.from('portfolio_media').update({ thumbnail_url: url }).eq('id', mediaId)
       }
-
       for (let i = 0; i < mediaFiles.length; i++) {
         const m = mediaFiles[i]
         const url = await uploadFile(m.file, 'media')
         let mediaThumbnail = ''
         if (m.thumbnailFile) mediaThumbnail = await uploadFile(m.thumbnailFile, 'thumbnails')
-        await supabase.from('portfolio_media').insert([{
-          portfolio_id: portfolioId,
-          url,
-          type: m.type,
-          sort_order: (existingMedias.length + i),
-          thumbnail_url: mediaThumbnail
-        }])
+        await supabase.from('portfolio_media').insert([{ portfolio_id: portfolioId, url, type: m.type, sort_order: existingMedias.length + i, thumbnail_url: mediaThumbnail }])
       }
-
       alert(editingId ? 'Updated!' : 'Added!')
       setEditingId(null)
       setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
-      setMediaFiles([])
-      setThumbnailFile(null)
-      setExistingMedias([])
-      setExistingThumbnails({})
+      setMediaFiles([]); setThumbnailFile(null); setExistingMedias([]); setExistingThumbnails({})
       fetchPortfolios()
-    } catch (e) {
-      alert('Error: ' + e)
-    }
+    } catch (e) { alert('Error: ' + e) }
     setUploading(false)
   }
 
-  const movePortfolio = async (index: number, direction: 'up' | 'down') => {
+  const movePortfolio = async (index: number, direction: 'up'|'down') => {
     const swapIndex = direction === 'up' ? index - 1 : index + 1
     if (swapIndex < 0 || swapIndex >= portfolios.length) return
-    const a = portfolios[index]
-    const b = portfolios[swapIndex]
-    const aOrder = a.sort_order ?? index
-    const bOrder = b.sort_order ?? swapIndex
-    await supabase.from('portfolio').update({ sort_order: bOrder }).eq('id', a.id)
-    await supabase.from('portfolio').update({ sort_order: aOrder }).eq('id', b.id)
+    const a = portfolios[index]; const b = portfolios[swapIndex]
+    await supabase.from('portfolio').update({ sort_order: b.sort_order ?? swapIndex }).eq('id', a.id)
+    await supabase.from('portfolio').update({ sort_order: a.sort_order ?? index }).eq('id', b.id)
     fetchPortfolios()
   }
 
   const startEdit = async (p: any) => {
     setEditingId(p.id)
-    setForm({
-      title: p.title || '',
-      client: p.client || '',
-      category: p.category || 'hospitality',
-      type: p.type || '',
-      year: p.year || '2025',
-    })
+    setForm({ title: p.title||'', client: p.client||'', category: p.category||'hospitality', type: p.type||'', year: p.year||'2025' })
     const { data } = await supabase.from('portfolio_media').select('*').eq('portfolio_id', p.id).order('sort_order')
-    setExistingMedias(data || [])
-    setMediaFiles([])
-    setExistingThumbnails({})
+    setExistingMedias(data || []); setMediaFiles([]); setExistingThumbnails({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const cancelEdit = () => {
     setEditingId(null)
     setForm({ title: '', client: '', category: 'hospitality', type: '', year: '2025' })
-    setMediaFiles([])
-    setThumbnailFile(null)
-    setExistingMedias([])
-    setExistingThumbnails({})
+    setMediaFiles([]); setThumbnailFile(null); setExistingMedias([]); setExistingThumbnails({})
   }
 
   const deleteMedia = async (id: number) => {
@@ -144,6 +132,68 @@ export default function Admin() {
     setMediaFiles(prev => prev.map((m, i) => i === index ? { ...m, thumbnailFile: file } : m))
   }
 
+  // Hospitality functions
+  const handleBrandSubmit = async () => {
+    if (!brandName) return alert('브랜드 이름을 입력하세요')
+    setBrandUploading(true)
+    try {
+      let brandId = editingBrandId
+      if (editingBrandId) {
+        await supabase.from('hospitality_brands').update({ name: brandName }).eq('id', editingBrandId)
+      } else {
+        const maxOrder = brands.length > 0 ? Math.max(...brands.map(b => b.sort_order || 0)) + 1 : 0
+        const { data } = await supabase.from('hospitality_brands').insert([{ name: brandName, sort_order: maxOrder }]).select()
+        brandId = data?.[0]?.id
+      }
+      for (const [mediaId, file] of Object.entries(existingBrandThumbnails)) {
+        const url = await uploadFile(file as File, 'thumbnails')
+        await supabase.from('hospitality_media').update({ thumbnail_url: url }).eq('id', mediaId)
+      }
+      for (let i = 0; i < brandMediaFiles.length; i++) {
+        const m = brandMediaFiles[i]
+        const url = await uploadFile(m.file, 'media')
+        let mediaThumbnail = ''
+        if (m.thumbnailFile) mediaThumbnail = await uploadFile(m.thumbnailFile, 'thumbnails')
+        await supabase.from('hospitality_media').insert([{ brand_id: brandId, url, type: m.type, sort_order: existingBrandMedias.length + i, thumbnail_url: mediaThumbnail }])
+      }
+      alert(editingBrandId ? 'Updated!' : 'Brand added!')
+      setEditingBrandId(null); setBrandName(''); setBrandMediaFiles([]); setExistingBrandMedias([]); setExistingBrandThumbnails({})
+      fetchBrands()
+    } catch (e) { alert('Error: ' + e) }
+    setBrandUploading(false)
+  }
+
+  const startEditBrand = async (b: any) => {
+    setEditingBrandId(b.id); setBrandName(b.name)
+    const { data } = await supabase.from('hospitality_media').select('*').eq('brand_id', b.id).order('sort_order')
+    setExistingBrandMedias(data || []); setBrandMediaFiles([]); setExistingBrandThumbnails({})
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const cancelEditBrand = () => {
+    setEditingBrandId(null); setBrandName(''); setBrandMediaFiles([]); setExistingBrandMedias([]); setExistingBrandThumbnails({})
+  }
+
+  const deleteBrandMedia = async (id: string) => {
+    await supabase.from('hospitality_media').delete().eq('id', id)
+    setExistingBrandMedias(existingBrandMedias.filter(m => m.id !== id))
+  }
+
+  const deleteBrand = async (id: string) => {
+    await supabase.from('hospitality_media').delete().eq('brand_id', id)
+    await supabase.from('hospitality_brands').delete().eq('id', id)
+    fetchBrands()
+  }
+
+  const addBrandMediaFile = (file: File) => {
+    const type = file.type.startsWith('video') ? 'video' : 'image'
+    setBrandMediaFiles(prev => [...prev, { file, type }])
+  }
+
+  const updateBrandMediaThumbnail = (index: number, file: File) => {
+    setBrandMediaFiles(prev => prev.map((m, i) => i === index ? { ...m, thumbnailFile: file } : m))
+  }
+
   if (!isLoggedIn) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0a0a0a'}}>
       <div style={{background:'#141414',padding:'3rem',width:'360px'}}>
@@ -151,9 +201,7 @@ export default function Admin() {
         <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && login()}
           style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(255,255,255,0.2)',color:'#fff',padding:'0.7rem 0',fontSize:'15px',outline:'none',marginBottom:'1.5rem'}}/>
-        <button onClick={login} style={{width:'100%',background:'#fff',color:'#000',border:'none',padding:'1rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer'}}>
-          Enter
-        </button>
+        <button onClick={login} style={{width:'100%',background:'#fff',color:'#000',border:'none',padding:'1rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer'}}>Enter</button>
       </div>
     </div>
   )
@@ -165,132 +213,195 @@ export default function Admin() {
         <button onClick={() => setIsLoggedIn(false)} style={{background:'transparent',border:'1px solid rgba(255,255,255,0.2)',color:'#fff',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>Logout</button>
       </div>
 
+      {/* TABS */}
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(0,0,0,0.08)',display:'flex',gap:'0'}}>
+        {(['portfolio','hospitality'] as const).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            style={{padding:'1rem 2rem',fontSize:'13px',fontWeight:500,letterSpacing:'0.06em',textTransform:'uppercase',background:'transparent',border:'none',cursor:'pointer',borderBottom: tab===t ? '2px solid #0a0a0a' : '2px solid transparent',color: tab===t ? '#0a0a0a' : '#888'}}>
+            {t === 'portfolio' ? 'Portfolio' : 'Hospitality Brands'}
+          </button>
+        ))}
+      </div>
+
       <div style={{maxWidth:'900px',margin:'3rem auto',padding:'0 2rem'}}>
-        <div style={{background:'#fff',padding:'2.5rem',marginBottom:'2rem',border:'1px solid rgba(0,0,0,0.08)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
-            <h2 style={{fontSize:'18px',fontWeight:500}}>{editingId ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</h2>
-            {editingId && (
-              <button onClick={cancelEdit} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Cancel</button>
-            )}
-          </div>
 
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'1.5rem'}}>
-            {[['Title','title'],['Client','client'],['Type (e.g. Video · Social)','type'],['Year','year']].map(([label, key]) => (
-              <div key={key}>
-                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>{label}</label>
-                <input type="text" value={form[key as keyof typeof form]} onChange={e => setForm({...form, [key]: e.target.value})}
-                  style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}/>
+        {/* PORTFOLIO TAB */}
+        {tab === 'portfolio' && (
+          <>
+            <div style={{background:'#fff',padding:'2.5rem',marginBottom:'2rem',border:'1px solid rgba(0,0,0,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
+                <h2 style={{fontSize:'18px',fontWeight:500}}>{editingId ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</h2>
+                {editingId && <button onClick={cancelEdit} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Cancel</button>}
               </div>
-            ))}
-          </div>
-
-          <div style={{marginBottom:'1.5rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Category</label>
-            <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-              style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}>
-              <option value="hospitality">Hospitality</option>
-              <option value="realestate">Real Estate</option>
-              <option value="production">Production</option>
-              <option value="brandevent">Brand Event</option>
-            </select>
-          </div>
-
-          <div style={{marginBottom:'1.5rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Portfolio Thumbnail</label>
-            <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && setThumbnailFile(e.target.files[0])}
-              style={{fontSize:'13px',color:'#888'}}/>
-          </div>
-
-          {existingMedias.length > 0 && (
-            <div style={{marginBottom:'1.5rem'}}>
-              <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
-              {existingMedias.map((m, i) => (
-                <div key={m.id} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
-                    <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
-                    <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',marginBottom:'1.5rem'}}>
+                {[['Title','title'],['Client','client'],['Type (e.g. Video · Social)','type'],['Year','year']].map(([label, key]) => (
+                  <div key={key}>
+                    <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>{label}</label>
+                    <input type="text" value={form[key as keyof typeof form]} onChange={e => setForm({...form, [key]: e.target.value})}
+                      style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}/>
                   </div>
-                  {m.type === 'video' && (
-                    <div>
-                      <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>
-                        {m.thumbnail_url ? '썸네일 변경' : '썸네일 추가'}
-                      </label>
-                      <input type="file" accept="image/*" onChange={e => {
-                        if (e.target.files?.[0]) {
-                          setExistingThumbnails(prev => ({...prev, [m.id]: e.target.files![0]}))
-                        }
-                      }} style={{fontSize:'12px',color:'#888'}}/>
-                      {existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{existingThumbnails[m.id].name}</p>}
-                      {m.thumbnail_url && !existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>썸네일 설정됨 ✓</p>}
+                ))}
+              </div>
+              <div style={{marginBottom:'1.5rem'}}>
+                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Category</label>
+                <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                  style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}>
+                  <option value="hospitality">Hospitality</option>
+                  <option value="realestate">Real Estate</option>
+                  <option value="production">Production</option>
+                  <option value="brandevent">Brand Event</option>
+                </select>
+              </div>
+              <div style={{marginBottom:'1.5rem'}}>
+                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Portfolio Thumbnail</label>
+                <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && setThumbnailFile(e.target.files[0])} style={{fontSize:'13px',color:'#888'}}/>
+              </div>
+              {existingMedias.length > 0 && (
+                <div style={{marginBottom:'1.5rem'}}>
+                  <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
+                  {existingMedias.map((m, i) => (
+                    <div key={m.id} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
+                        <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
+                        <button onClick={() => deleteMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+                      </div>
+                      {m.type === 'video' && (
+                        <div>
+                          <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>{m.thumbnail_url ? '썸네일 변경' : '썸네일 추가'}</label>
+                          <input type="file" accept="image/*" onChange={e => { if (e.target.files?.[0]) setExistingThumbnails(prev => ({...prev, [m.id]: e.target.files![0]})) }} style={{fontSize:'12px',color:'#888'}}/>
+                          {existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{existingThumbnails[m.id].name}</p>}
+                          {m.thumbnail_url && !existingThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>썸네일 설정됨 ✓</p>}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-
-          <div style={{marginBottom:'2rem'}}>
-            <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files</label>
-            <input type="file" accept="video/*,image/*" multiple onChange={e => {
-              if (e.target.files) Array.from(e.target.files).forEach(addMediaFile)
-            }} style={{fontSize:'13px',color:'#888',marginBottom:'0.8rem'}}/>
-            {mediaFiles.length > 0 && (
-              <div style={{marginTop:'0.8rem'}}>
+              )}
+              <div style={{marginBottom:'2rem'}}>
+                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files</label>
+                <input type="file" accept="video/*,image/*" multiple onChange={e => { if (e.target.files) Array.from(e.target.files).forEach(addMediaFile) }} style={{fontSize:'13px',color:'#888',marginBottom:'0.8rem'}}/>
                 {mediaFiles.map((m, i) => (
                   <div key={i} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
                       <span style={{fontSize:'13px',color:'#555'}}>{m.type} — {m.file.name.slice(0,40)}</span>
-                      <button onClick={() => setMediaFiles(mediaFiles.filter((_,j) => j !== i))}
-                        style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
+                      <button onClick={() => setMediaFiles(mediaFiles.filter((_,j) => j !== i))} style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
                     </div>
                     {m.type === 'video' && (
                       <div>
                         <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>Video Thumbnail (선택)</label>
-                        <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && updateMediaThumbnail(i, e.target.files[0])}
-                          style={{fontSize:'12px',color:'#888'}}/>
+                        <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && updateMediaThumbnail(i, e.target.files[0])} style={{fontSize:'12px',color:'#888'}}/>
                         {m.thumbnailFile && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{m.thumbnailFile.name}</p>}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-
-          <button onClick={handleSubmit} disabled={uploading}
-            style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'1rem 2rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',opacity:uploading?0.5:1}}>
-            {uploading ? 'Uploading...' : editingId ? 'Save Changes' : 'Add to Portfolio'}
-          </button>
-        </div>
-
-        <div style={{background:'#fff',padding:'2.5rem',border:'1px solid rgba(0,0,0,0.08)'}}>
-          <h2 style={{fontSize:'18px',fontWeight:500,marginBottom:'2rem'}}>Portfolio ({portfolios.length})</h2>
-          {portfolios.map((p, index) => (
-            <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1.2rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
-              <div>
-                <p style={{fontWeight:500,fontSize:'15px'}}>{p.client}</p>
-                <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
-              </div>
-              <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
-                <div style={{display:'flex',flexDirection:'column',gap:'2px'}}>
-                  <button onClick={() => movePortfolio(index, 'up')} disabled={index === 0}
-                    style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===0?0.3:1}}>↑</button>
-                  <button onClick={() => movePortfolio(index, 'down')} disabled={index === portfolios.length - 1}
-                    style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===portfolios.length-1?0.3:1}}>↓</button>
-                </div>
-                <button onClick={() => startEdit(p)}
-                  style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>
-                  Edit
-                </button>
-                <button onClick={() => deletePortfolio(p.id)}
-                  style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>
-                  Delete
-                </button>
-              </div>
+              <button onClick={handleSubmit} disabled={uploading}
+                style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'1rem 2rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',opacity:uploading?0.5:1}}>
+                {uploading ? 'Uploading...' : editingId ? 'Save Changes' : 'Add to Portfolio'}
+              </button>
             </div>
-          ))}
-          {portfolios.length === 0 && <p style={{color:'#888',fontSize:'14px'}}>No portfolio items yet.</p>}
-        </div>
+
+            <div style={{background:'#fff',padding:'2.5rem',border:'1px solid rgba(0,0,0,0.08)'}}>
+              <h2 style={{fontSize:'18px',fontWeight:500,marginBottom:'2rem'}}>Portfolio ({portfolios.length})</h2>
+              {portfolios.map((p, index) => (
+                <div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1.2rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
+                  <div>
+                    <p style={{fontWeight:500,fontSize:'15px'}}>{p.client}</p>
+                    <p style={{fontSize:'12px',color:'#888',marginTop:'2px'}}>{p.type} · {p.year} · {p.category}</p>
+                  </div>
+                  <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
+                    <div style={{display:'flex',flexDirection:'column',gap:'2px'}}>
+                      <button onClick={() => movePortfolio(index, 'up')} disabled={index===0} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===0?0.3:1}}>↑</button>
+                      <button onClick={() => movePortfolio(index, 'down')} disabled={index===portfolios.length-1} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.2rem 0.6rem',fontSize:'11px',cursor:'pointer',color:'#888',opacity:index===portfolios.length-1?0.3:1}}>↓</button>
+                    </div>
+                    <button onClick={() => startEdit(p)} style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>Edit</button>
+                    <button onClick={() => deletePortfolio(p.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Delete</button>
+                  </div>
+                </div>
+              ))}
+              {portfolios.length === 0 && <p style={{color:'#888',fontSize:'14px'}}>No portfolio items yet.</p>}
+            </div>
+          </>
+        )}
+
+        {/* HOSPITALITY TAB */}
+        {tab === 'hospitality' && (
+          <>
+            <div style={{background:'#fff',padding:'2.5rem',marginBottom:'2rem',border:'1px solid rgba(0,0,0,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
+                <h2 style={{fontSize:'18px',fontWeight:500}}>{editingBrandId ? 'Edit Brand' : 'Add Brand'}</h2>
+                {editingBrandId && <button onClick={cancelEditBrand} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Cancel</button>}
+              </div>
+              <div style={{marginBottom:'1.5rem'}}>
+                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.4rem'}}>Brand Name</label>
+                <input type="text" placeholder="e.g. Pocha" value={brandName} onChange={e => setBrandName(e.target.value)}
+                  style={{width:'100%',background:'transparent',border:'none',borderBottom:'1px solid rgba(0,0,0,0.15)',padding:'0.6rem 0',fontSize:'15px',outline:'none'}}/>
+              </div>
+
+              {existingBrandMedias.length > 0 && (
+                <div style={{marginBottom:'1.5rem'}}>
+                  <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Current Media</label>
+                  {existingBrandMedias.map((m, i) => (
+                    <div key={m.id} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
+                        <span style={{fontSize:'13px',color:'#555'}}>{m.type} {i+1} — {m.url.split('/').pop()?.slice(0,40)}</span>
+                        <button onClick={() => deleteBrandMedia(m.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.3rem 0.8rem',fontSize:'11px',cursor:'pointer',color:'#888'}}>Remove</button>
+                      </div>
+                      {m.type === 'video' && (
+                        <div>
+                          <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>{m.thumbnail_url ? '썸네일 변경' : '썸네일 추가'}</label>
+                          <input type="file" accept="image/*" onChange={e => { if (e.target.files?.[0]) setExistingBrandThumbnails(prev => ({...prev, [m.id]: e.target.files![0]})) }} style={{fontSize:'12px',color:'#888'}}/>
+                          {existingBrandThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{existingBrandThumbnails[m.id].name}</p>}
+                          {m.thumbnail_url && !existingBrandThumbnails[m.id] && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>썸네일 설정됨 ✓</p>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{marginBottom:'2rem'}}>
+                <label style={{fontSize:'11px',letterSpacing:'0.1em',textTransform:'uppercase',color:'#888',display:'block',marginBottom:'0.8rem'}}>Add Media Files</label>
+                <input type="file" accept="video/*,image/*" multiple onChange={e => { if (e.target.files) Array.from(e.target.files).forEach(addBrandMediaFile) }} style={{fontSize:'13px',color:'#888',marginBottom:'0.8rem'}}/>
+                {brandMediaFiles.map((m, i) => (
+                  <div key={i} style={{padding:'0.8rem',marginBottom:'0.5rem',background:'#f9f9f9',border:'1px solid rgba(0,0,0,0.06)'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.5rem'}}>
+                      <span style={{fontSize:'13px',color:'#555'}}>{m.type} — {m.file.name.slice(0,40)}</span>
+                      <button onClick={() => setBrandMediaFiles(brandMediaFiles.filter((_,j) => j !== i))} style={{background:'transparent',border:'none',cursor:'pointer',color:'#888',fontSize:'16px'}}>×</button>
+                    </div>
+                    {m.type === 'video' && (
+                      <div>
+                        <label style={{fontSize:'11px',letterSpacing:'0.08em',textTransform:'uppercase',color:'#aaa',display:'block',marginBottom:'0.3rem'}}>Video Thumbnail (선택)</label>
+                        <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && updateBrandMediaThumbnail(i, e.target.files[0])} style={{fontSize:'12px',color:'#888'}}/>
+                        {m.thumbnailFile && <p style={{fontSize:'11px',color:'#aaa',marginTop:'3px'}}>{m.thumbnailFile.name}</p>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={handleBrandSubmit} disabled={brandUploading}
+                style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'1rem 2rem',fontSize:'13px',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',cursor:'pointer',opacity:brandUploading?0.5:1}}>
+                {brandUploading ? 'Uploading...' : editingBrandId ? 'Save Changes' : 'Add Brand'}
+              </button>
+            </div>
+
+            <div style={{background:'#fff',padding:'2.5rem',border:'1px solid rgba(0,0,0,0.08)'}}>
+              <h2 style={{fontSize:'18px',fontWeight:500,marginBottom:'2rem'}}>Hospitality Brands ({brands.length})</h2>
+              {brands.map(b => (
+                <div key={b.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1.2rem 0',borderBottom:'1px solid rgba(0,0,0,0.06)'}}>
+                  <p style={{fontWeight:500,fontSize:'15px'}}>{b.name}</p>
+                  <div style={{display:'flex',gap:'0.5rem'}}>
+                    <button onClick={() => startEditBrand(b)} style={{background:'#0a0a0a',color:'#fff',border:'none',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer'}}>Edit</button>
+                    <button onClick={() => deleteBrand(b.id)} style={{background:'transparent',border:'1px solid rgba(0,0,0,0.15)',padding:'0.4rem 1rem',fontSize:'12px',cursor:'pointer',color:'#888'}}>Delete</button>
+                  </div>
+                </div>
+              ))}
+              {brands.length === 0 && <p style={{color:'#888',fontSize:'14px'}}>No brands yet.</p>}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
