@@ -217,6 +217,8 @@ export default function Home() {
         .ph-3{background:radial-gradient(90% 78% at 80% 20%,#7c7c7c 0%,#232323 48%,#0a0a0a 100%)}
         .ph-4{background:linear-gradient(200deg,#c6c6c6 0%,#6a6a6a 26%,#1b1b1b 72%,#0a0a0a 100%)}
         .ph-5{background:radial-gradient(128% 108% at 50% 128%,#5d5d5d 0%,#1a1a1a 45%,#080808 100%)}
+        .wcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transition:transform 0.7s cubic-bezier(0.16,1,0.3,1)}
+        .wcard:hover .wcard-img{transform:scale(1.05)}
         .wcard-veil{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(10,10,10,0.86) 0%,rgba(10,10,10,0.1) 48%,rgba(10,10,10,0.35) 100%)}
         .wcard-top{position:absolute;top:0.8rem;left:0.85rem;right:0.85rem;z-index:3;display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,245,243,0.55)}
         .wcard-foot{position:absolute;left:0.85rem;right:0.85rem;bottom:0.85rem;z-index:3;color:var(--white)}
@@ -242,6 +244,7 @@ export default function Home() {
         .fcard{position:relative;flex:0 0 auto;display:block;scroll-snap-align:start;width:clamp(122px,11.5vw,170px);aspect-ratio:9/16;overflow:hidden;background:#141414;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1),filter 0.5s ease;filter:brightness(0.82)}
         .feed-strip:hover .fcard{filter:brightness(0.5)}
         .feed-strip .fcard:hover{transform:translateY(-8px);filter:brightness(1)}
+        .fcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block}
         .fcard-veil{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(10,10,10,0.88) 0%,rgba(10,10,10,0.06) 52%,rgba(10,10,10,0.3) 100%)}
         .fcard-ext{position:absolute;top:0.55rem;right:0.6rem;z-index:3;font-size:11px;color:rgba(245,245,243,0.6)}
         .fcard-play{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);z-index:3;width:30px;height:30px;border-radius:50%;border:1px solid rgba(245,245,243,0.7);display:grid;place-items:center;background:rgba(10,10,10,0.22);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
@@ -345,13 +348,15 @@ export default function Home() {
           {work.map((w, i) => {
             const inner = (
               <>
-                <span className={`wcard-ph ph-${i % 6}`}/>
+                {w.cover
+                  ? <img className="wcard-img" src={w.cover} alt="" loading={i < 3 ? 'eager' : 'lazy'}/>
+                  : <span className={`wcard-ph ph-${i % 6}`}/>}
                 <span className="wcard-veil"/>
                 <span className="wcard-top"><span>{String(i+1).padStart(2,'0')}</span><span>{w.sector}</span></span>
                 <span className="wcard-foot">
                   <span className="wcard-name">{w.client}</span>
                   <span className="wcard-hook">{w.hook}</span>
-                  <span className="wcard-read">{w.external ? 'See it on Instagram \u2197' : 'Read the case \u2192'}</span>
+                  <span className="wcard-read">{w.external ? 'See it on Instagram ↗' : 'Read the case →'}</span>
                 </span>
               </>
             )
@@ -369,7 +374,7 @@ export default function Home() {
       <section id="feed">
         <div className="work-hd">
           <span className="sec-label">Latest from the feed</span>
-          <a className="sec-label feed-link" href="https://instagram.com/viralx_nz" target="_blank" rel="noopener noreferrer">@VIRALX_NZ \u2197</a>
+          <a className="sec-label feed-link" href="https://instagram.com/viralx_nz" target="_blank" rel="noopener noreferrer">@VIRALX_NZ ↗</a>
         </div>
         <div className="feed-strip">
           {[0,1].map(track => (
@@ -377,9 +382,11 @@ export default function Home() {
               {[...feed, ...feed].map((f, i) => (
                 <a key={`${track}-${i}`} className="fcard" href={f.url} target="_blank" rel="noopener noreferrer"
                    tabIndex={track === 1 ? -1 : undefined} aria-label={`Watch on Instagram: ${f.label}`}>
-                  <span className={`wcard-ph ph-${(i+3) % 6}`}/>
+                  {f.cover
+                    ? <img className="fcard-img" src={f.cover} alt="" loading="lazy" />
+                    : <span className={`wcard-ph ph-${(i+3) % 6}`}/>}
                   <span className="fcard-veil"/>
-                  <span className="fcard-ext" aria-hidden="true">\u2197</span>
+                  <span className="fcard-ext" aria-hidden="true">↗</span>
                   <span className="fcard-play" aria-hidden="true">
                     <svg width="8" height="10" viewBox="0 0 8 10" fill="none"><path d="M8 5L0 9.33V0.67L8 5Z" fill="#f5f5f3"/></svg>
                   </span>
@@ -506,7 +513,7 @@ export default function Home() {
           <li><a href="#verticals">Studio</a></li>
           <li><a href="https://instagram.com/viralx_nz" target="_blank">Instagram</a></li>
         </ul>
-        <p className="ft-copy">© 2025 ViralX Agency · Auckland, NZ</p>
+        <p className="ft-copy">© {new Date().getFullYear()} ViralX Agency · Auckland, NZ</p>
       </footer>
     </>
   )

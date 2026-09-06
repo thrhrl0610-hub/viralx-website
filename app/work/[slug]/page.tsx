@@ -36,6 +36,7 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
         .cs-logo{font-weight:500;font-size:17px;letter-spacing:0.02em}
         .cs-hero{position:relative;min-height:60vh;display:flex;align-items:flex-end;color:var(--white);background:#0a0a0a;overflow:hidden}
         .cs-hero-ph{position:absolute;inset:0;background:radial-gradient(70% 68% at 52% 44%,#9a9a9a 0%,#303030 46%,#0a0a0a 100%)}
+        .cs-hero-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
         .cs-hero-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,0.88) 0%,rgba(10,10,10,0.2) 58%,rgba(10,10,10,0.4) 100%)}
         .cs-hero-in{position:relative;z-index:2;padding:2.5rem;width:100%;display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap}
         .cs-eyebrow{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(245,245,243,0.6);margin-bottom:0.8rem}
@@ -59,7 +60,25 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
         .cs-duo figure{margin:0;display:flex;flex-direction:column;gap:0.7rem}
         .cs-shot{aspect-ratio:4/5;background:linear-gradient(200deg,#c6c6c6 0%,#6a6a6a 26%,#1b1b1b 72%,#0a0a0a 100%)}
         .cs-duo figcaption{font-size:12.5px;color:var(--mid)}
+        .cs-media,.cs-full,.cs-shot{overflow:hidden;position:relative}
+        .cs-media img,.cs-full img,.cs-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+        .cs-video{padding:0 2.5rem}
+        .cs-video video{width:100%;display:block;background:#0a0a0a;aspect-ratio:16/9;object-fit:contain}
+        .cs-video.portrait video{aspect-ratio:9/16;max-width:min(420px,74vw);margin:0 auto}
+        .cs-video figcaption{padding-top:0.85rem;font-size:13px;color:var(--mid);max-width:52ch}
+        .cs-slot{aspect-ratio:16/9;border:1px dashed rgba(0,0,0,0.28);background:rgba(0,0,0,0.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6rem;color:var(--mid)}
+        .cs-video.portrait .cs-slot{aspect-ratio:9/16;max-width:min(420px,74vw);margin:0 auto}
+        .cs-slot-n{font-size:10px;letter-spacing:0.16em;text-transform:uppercase}
+        .cs-slot-t{font-size:14px;color:#3a3a3a;max-width:38ch;text-align:center;padding:0 1rem}
+        .cs-vpair{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;padding:0 2.5rem;align-items:start}
+        .cs-vpair figure{margin:0}
+        .cs-vpair video{width:100%;display:block;background:#0a0a0a}
+        .cs-vpair figcaption{padding-top:0.8rem;font-size:12.5px;color:var(--mid)}
         .cs-pull{padding:0 2.5rem}
+        .cs-note{padding:0 2.5rem;max-width:60ch;margin:0 auto}
+        .cs-note h2{font-family:'Anton',sans-serif;font-size:clamp(24px,3vw,38px);text-transform:uppercase;line-height:0.96;margin-bottom:1rem}
+        .cs-note p{font-size:15px;line-height:1.72;color:#3a3a3a}
+        .cs-note p + p{margin-top:1rem}
         .cs-pull p{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(24px,3.6vw,52px);line-height:1.02;letter-spacing:-0.01em;max-width:19ch}
         .cs-phases{border-top:1px solid rgba(0,0,0,0.08);border-bottom:1px solid rgba(0,0,0,0.08);display:grid;grid-template-columns:repeat(4,1fr)}
         .cs-phase{padding:2rem 1.8rem;border-right:1px solid rgba(0,0,0,0.08)}
@@ -80,8 +99,11 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
           .cs-split{grid-template-columns:1fr;gap:1.5rem;padding:0 1.5rem}
           .cs-media,.cs-split.flip .cs-media{order:-1;aspect-ratio:4/3}
           .cs-duo{grid-template-columns:1fr;padding:0 1.5rem}
-          .cs-pull,.cs-cap{padding-left:1.5rem;padding-right:1.5rem}
+          .cs-vpair{grid-template-columns:1fr;padding:0 1.5rem;gap:2rem}
+          .cs-pull,.cs-cap,.cs-note{padding-left:1.5rem;padding-right:1.5rem}
           .cs-full{aspect-ratio:4/3}
+          .cs-video{padding:0 1.5rem}
+          .cs-video figcaption{padding-left:0;padding-right:0}
           .cs-phases{grid-template-columns:1fr}
           .cs-phase{border-right:none;border-bottom:1px solid rgba(0,0,0,0.08)}
           .cs-phase:last-child{border-bottom:none}
@@ -97,7 +119,9 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
       </div>
 
       <header className="cs-hero">
-        <div className="cs-hero-ph" />
+        <div className="cs-hero-ph">
+          {c.hero ? <img src={c.hero} alt="" /> : null}
+        </div>
         <div className="cs-hero-veil" />
         <div className="cs-hero-in">
           <div>
@@ -125,7 +149,9 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
                   <h2>{b.title}</h2>
                   {b.body.map((t, n) => <p key={n}>{t}</p>)}
                 </div>
-                <div className="cs-media" />
+                <div className="cs-media">
+                  {b.src ? <img src={b.src} alt={b.alt ?? ''} loading="lazy" /> : null}
+                </div>
               </section>
             )
           }
@@ -133,9 +159,12 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
             return (
               <figure key={i}>
                 <div className="cs-full">
-                  <span className="cs-play" aria-hidden="true">
-                    <svg width="18" height="20" viewBox="0 0 18 20" fill="none"><path d="M17 10L0.5 19.5V0.5L17 10Z" fill="#f5f5f3" /></svg>
-                  </span>
+                  {b.src ? <img src={b.src} alt={b.alt ?? ''} loading="lazy" /> : null}
+                  {b.play !== false ? (
+                    <span className="cs-play" aria-hidden="true">
+                      <svg width="18" height="20" viewBox="0 0 18 20" fill="none"><path d="M17 10L0.5 19.5V0.5L17 10Z" fill="#f5f5f3" /></svg>
+                    </span>
+                  ) : null}
                 </div>
                 {b.caption ? <figcaption className="cs-cap">{b.caption}</figcaption> : null}
               </figure>
@@ -146,11 +175,62 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
               <div className="cs-duo" key={i}>
                 {b.captions.map((cap, n) => (
                   <figure key={n}>
-                    <div className="cs-shot" />
+                    <div className="cs-shot">
+                      {b.srcs?.[n] ? <img src={b.srcs[n]} alt={cap} loading="lazy" /> : null}
+                    </div>
                     {cap ? <figcaption>{cap}</figcaption> : null}
                   </figure>
                 ))}
               </div>
+            )
+          }
+          if (b.type === 'note') {
+            return (
+              <section className="cs-note" key={i}>
+                {b.title ? <h2>{b.title}</h2> : null}
+                {b.body.map((x, n) => <p key={n}>{x}</p>)}
+              </section>
+            )
+          }
+          if (b.type === 'videos') {
+            return (
+              <div className="cs-vpair" key={i}>
+                {b.items.map((v, n) => (
+                  <figure key={n}>
+                    <video
+                      src={v.src}
+                      poster={v.poster}
+                      controls
+                      preload="metadata"
+                      playsInline
+                      style={{ aspectRatio: v.ratio ?? '9 / 16' }}
+                    />
+                    {v.caption ? <figcaption>{v.caption}</figcaption> : null}
+                  </figure>
+                ))}
+              </div>
+            )
+          }
+          if (b.type === 'video') {
+            return (
+              <figure className={`cs-video${b.portrait ? ' portrait' : ''}`} key={i}>
+                {b.src ? (
+                  <video
+                    src={b.src}
+                    poster={b.poster}
+                    controls
+                    preload="metadata"
+                    playsInline
+                    style={b.ratio ? { aspectRatio: b.ratio } : undefined}
+                  />
+                ) : (
+                  <div className="cs-slot">
+                    <span className="cs-slot-n">{b.slot ?? 'Film'}</span>
+                    <span className="cs-slot-t">{b.caption ?? 'Video slot'}</span>
+                  </div>
+                )}
+                {b.src && b.caption ? <figcaption>{b.caption}</figcaption> : null}
+              </figure>
             )
           }
           return <div className="cs-pull" key={i}><p>{b.text}</p></div>
@@ -181,7 +261,7 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
 
       <footer className="cs-foot">
         <a href="/" className="cs-logo">ViralX</a>
-        <span>© 2026 ViralX Agency · Auckland, NZ</span>
+        <span>© {new Date().getFullYear()} ViralX Agency · Auckland, NZ</span>
       </footer>
     </>
   )
