@@ -236,17 +236,13 @@ export default function Home() {
         .feed-strip{display:flex;overflow:hidden;padding:0 0 1.4rem;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%)}
         .feed-track{display:flex;gap:0.7rem;padding-right:0.7rem;flex-shrink:0;animation:cltick 72s linear infinite reverse}
         .feed-strip:hover .feed-track{animation-play-state:paused}
-        @media(hover:none){
-          .feed-strip{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding-left:1.5rem}
-          .feed-strip::-webkit-scrollbar{display:none}
-          .feed-track{animation:none}
-        }
         .fcard{position:relative;flex:0 0 auto;display:block;scroll-snap-align:start;width:clamp(122px,11.5vw,170px);aspect-ratio:9/16;overflow:hidden;background:#141414;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1),filter 0.5s ease;filter:brightness(0.82)}
         .feed-strip:hover .fcard{filter:brightness(0.5)}
         .feed-strip .fcard:hover{transform:translateY(-8px);filter:brightness(1)}
         .fcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block}
         .fcard-veil{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(10,10,10,0.88) 0%,rgba(10,10,10,0.06) 52%,rgba(10,10,10,0.3) 100%)}
         .fcard-ext{position:absolute;top:0.55rem;right:0.6rem;z-index:3;font-size:11px;color:rgba(245,245,243,0.6)}
+        @media(hover:none),(max-width:768px){ .fcard-ext,.arw{display:none} }
         .fcard-play{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);z-index:3;width:30px;height:30px;border-radius:50%;border:1px solid rgba(245,245,243,0.7);display:grid;place-items:center;background:rgba(10,10,10,0.22);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
         .fcard:hover .fcard-play{transform:translate(-50%,-50%) scale(1.14)}
         .fcard-foot{position:absolute;left:0.65rem;right:0.65rem;bottom:0.7rem;z-index:3}
@@ -356,7 +352,7 @@ export default function Home() {
                 <span className="wcard-foot">
                   <span className="wcard-name">{w.client}</span>
                   <span className="wcard-hook">{w.hook}</span>
-                  <span className="wcard-read">{w.external ? 'See it on Instagram ↗' : 'Read the case →'}</span>
+                  <span className="wcard-read">{w.external ? <>See it on Instagram<span className="arw"> ↗︎</span></> : 'Read the case →'}</span>
                 </span>
               </>
             )
@@ -374,7 +370,7 @@ export default function Home() {
       <section id="feed">
         <div className="work-hd">
           <span className="sec-label">Latest from the feed</span>
-          <a className="sec-label feed-link" href="https://instagram.com/viralx_nz" target="_blank" rel="noopener noreferrer">@VIRALX_NZ ↗</a>
+          <a className="sec-label feed-link" href="https://instagram.com/viralx_nz" target="_blank" rel="noopener noreferrer">@VIRALX_NZ<span className="arw"> ↗︎</span></a>
         </div>
         <div className="feed-strip">
           {[0,1].map(track => (
@@ -386,7 +382,7 @@ export default function Home() {
                     ? <img className="fcard-img" src={f.cover} alt="" loading="lazy" />
                     : <span className={`wcard-ph ph-${(i+3) % 6}`}/>}
                   <span className="fcard-veil"/>
-                  <span className="fcard-ext" aria-hidden="true">↗</span>
+                  <span className="fcard-ext" aria-hidden="true">↗︎</span>
                   <span className="fcard-play" aria-hidden="true">
                     <svg width="8" height="10" viewBox="0 0 8 10" fill="none"><path d="M8 5L0 9.33V0.67L8 5Z" fill="#f5f5f3"/></svg>
                   </span>

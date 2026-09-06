@@ -94,14 +94,20 @@ export default async function CaseStudy({ params }: { params: Promise<{ slug: st
         .cs-foot span{font-size:12px;color:rgba(0,0,0,0.22)}
         @media(max-width:768px){
           .cs-bar{padding:1rem 1.5rem}
-          .cs-hero-in{padding:1.5rem}
+          /* Stack the hero: the still is 16:9, so cropping it into a tall
+             phone viewport turns it into an abstract. Show it whole. */
+          .cs-hero{min-height:0;display:block}
+          .cs-hero-ph{position:relative;inset:auto;width:100%;aspect-ratio:16/9}
+          .cs-hero-veil{display:none}
+          .cs-hero-in{padding:1.5rem;display:block;background:#0a0a0a}
+          .cs-hero h1{font-size:clamp(40px,12.5vw,72px)}
+          .cs-headline{padding-bottom:0;margin-top:1rem;max-width:none}
           .cs-meta{grid-template-columns:repeat(2,auto);gap:1.2rem 2rem;padding:1.4rem 1.5rem}
           .cs-split{grid-template-columns:1fr;gap:1.5rem;padding:0 1.5rem}
-          .cs-media,.cs-split.flip .cs-media{order:-1;aspect-ratio:4/3}
+          .cs-media,.cs-split.flip .cs-media{order:-1;aspect-ratio:4/5}
           .cs-duo{grid-template-columns:1fr;padding:0 1.5rem}
           .cs-vpair{grid-template-columns:1fr;padding:0 1.5rem;gap:2rem}
           .cs-pull,.cs-cap,.cs-note{padding-left:1.5rem;padding-right:1.5rem}
-          .cs-full{aspect-ratio:4/3}
           .cs-video{padding:0 1.5rem}
           .cs-video figcaption{padding-left:0;padding-right:0}
           .cs-phases{grid-template-columns:1fr}
