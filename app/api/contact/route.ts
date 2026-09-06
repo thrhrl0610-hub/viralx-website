@@ -1,13 +1,17 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+/** Built per request: constructing this at import time throws when the key
+ *  is absent, which fails the whole production build. */
+function client() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function POST(req: Request) {
   const { firstName, lastName, email, service, message } = await req.json()
 
   try {
-    await resend.emails.send({
+    await client().emails.send({
       from: 'ViralX <connect@viralx.co.nz>',
       to: 'connect@viralx.co.nz',
       subject: `New enquiry from ${firstName} ${lastName}`,

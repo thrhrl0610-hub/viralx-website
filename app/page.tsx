@@ -1,20 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { work, clients, feed } from '@/content/work'
 
 export default function Home() {
-  const [portfolios, setPortfolios] = useState<any[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [intro, setIntro] = useState(true)
   const [introFade, setIntroFade] = useState(false)
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', service: '', message: '' })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [formError, setFormError] = useState('')
 
   useEffect(() => {
-    supabase.from('portfolio').select('*').order('sort_order', { ascending: true }).then(({ data }) => {
-      if (data) setPortfolios(data)
-    })
     const t1 = setTimeout(() => setIntroFade(true), 2200)
     const t2 = setTimeout(() => setIntro(false), 2900)
     return () => { clearTimeout(t1); clearTimeout(t2) }
@@ -23,15 +20,21 @@ export default function Home() {
   async function handleSubmit() {
     if (!formData.firstName || !formData.email || !formData.service) return
     setSending(true)
+    setFormError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
-      if (res.ok) setSent(true)
-    } catch (e) {
-      alert('Something went wrong. Please try again.')
+      if (res.ok) {
+        setSent(true)
+      } else {
+        const body = await res.json().catch(() => ({}))
+        setFormError(body.error || "That didn't send. Try again, or email connect@viralx.co.nz.")
+      }
+    } catch {
+      setFormError("That didn't send. Check your connection, or email connect@viralx.co.nz.")
     }
     setSending(false)
   }
@@ -130,7 +133,7 @@ export default function Home() {
         .svc-intro p{font-size:15px;color:var(--mid);line-height:1.8;max-width:400px}
         .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid rgba(0,0,0,0.08)}
         .svc-item{padding:2.5rem 2.4rem;border-right:1px solid rgba(0,0,0,0.08);border-top:1px solid rgba(0,0,0,0.08);transition:background 0.18s}
-        .svc-item:last-child{border-right:none}
+        .svc-item:nth-child(3n){border-right:none}
         .svc-item:nth-child(-n+3){border-top:none}
         .svc-item:hover{background:rgba(0,0,0,0.02)}
         .svc-n{font-size:11px;letter-spacing:0.1em;color:rgba(0,0,0,0.18);margin-bottom:1.8rem}
@@ -196,6 +199,77 @@ export default function Home() {
           footer{flex-direction:column;gap:1.2rem;text-align:center;padding:2rem 1.5rem}
           .ft-links{flex-wrap:wrap;justify-content:center;gap:1.2rem}
         }
+
+        /* ---- Trusted by ---- */
+        .cl-head{display:flex;align-items:baseline;justify-content:space-between;gap:1.5rem;padding:0 2.5rem 1.1rem}
+        .cl-claim{font-size:15px;font-weight:500;letter-spacing:-0.005em;color:var(--black)}
+        .cl-claim b{font-weight:700}
+
+        /* ---- Selected work: 9:16, the format the work is shot in ---- */
+        .wall{display:grid;grid-template-columns:repeat(6,1fr);gap:0.7rem;padding:0 2.5rem 1.4rem}
+        .wcard{position:relative;aspect-ratio:9/16;overflow:hidden;background:#141414;display:block;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1),filter 0.5s ease}
+        .wall:hover .wcard{filter:brightness(0.62)}
+        .wall .wcard:hover{transform:translateY(-10px);filter:brightness(1)}
+        .wcard-ph{position:absolute;inset:0;z-index:0}
+        .ph-0{background:radial-gradient(115% 85% at 20% 12%,#6e6e6e 0%,#2a2a2a 42%,#0a0a0a 100%)}
+        .ph-1{background:radial-gradient(70% 68% at 52% 44%,#9a9a9a 0%,#303030 46%,#0a0a0a 100%)}
+        .ph-2{background:linear-gradient(178deg,#8b8b8b 0%,#313131 38%,#0d0d0d 100%)}
+        .ph-3{background:radial-gradient(90% 78% at 80% 20%,#7c7c7c 0%,#232323 48%,#0a0a0a 100%)}
+        .ph-4{background:linear-gradient(200deg,#c6c6c6 0%,#6a6a6a 26%,#1b1b1b 72%,#0a0a0a 100%)}
+        .ph-5{background:radial-gradient(128% 108% at 50% 128%,#5d5d5d 0%,#1a1a1a 45%,#080808 100%)}
+        .wcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transition:transform 0.7s cubic-bezier(0.16,1,0.3,1)}
+        .wcard:hover .wcard-img{transform:scale(1.05)}
+        .wcard-veil{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(10,10,10,0.86) 0%,rgba(10,10,10,0.1) 48%,rgba(10,10,10,0.35) 100%)}
+        .wcard-top{position:absolute;top:0.8rem;left:0.85rem;right:0.85rem;z-index:3;display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,245,243,0.55)}
+        .wcard-foot{position:absolute;left:0.85rem;right:0.85rem;bottom:0.85rem;z-index:3;color:var(--white)}
+        .wcard-name{font-size:16px;font-weight:500;letter-spacing:-0.015em;line-height:1.2;display:block}
+        .wcard-hook{display:block;font-size:11.5px;line-height:1.35;color:rgba(245,245,243,0.66);margin-top:0.3rem}
+        .wcard-read{display:block;max-height:0;opacity:0;overflow:hidden;font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--white);transition:max-height 0.35s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease,margin-top 0.35s ease}
+        .wcard:hover .wcard-hook{color:rgba(245,245,243,0.85)}
+        .wcard:hover .wcard-read{max-height:2.5em;opacity:1;margin-top:0.55rem}
+        .wall-hint{display:flex;justify-content:space-between;padding:0.4rem 2.5rem 2.4rem}
+
+        /* ---- Feed: leaves the site, so it may move; the wall may not ---- */
+        #feed{background:var(--white);border-top:1px solid rgba(0,0,0,0.08);padding-bottom:0.6rem}
+        .feed-link{color:var(--mid);transition:color 0.25s ease}
+        .feed-link:hover{color:var(--black)}
+        .feed-strip{display:flex;overflow:hidden;padding:0 0 1.4rem;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%)}
+        .feed-track{display:flex;gap:0.7rem;padding-right:0.7rem;flex-shrink:0;animation:cltick 72s linear infinite reverse}
+        .feed-strip:hover .feed-track{animation-play-state:paused}
+        .fcard{position:relative;flex:0 0 auto;display:block;scroll-snap-align:start;width:clamp(122px,11.5vw,170px);aspect-ratio:9/16;overflow:hidden;background:#141414;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1),filter 0.5s ease;filter:brightness(0.82)}
+        .feed-strip:hover .fcard{filter:brightness(0.5)}
+        .feed-strip .fcard:hover{transform:translateY(-8px);filter:brightness(1)}
+        .fcard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block}
+        .fcard-veil{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(10,10,10,0.88) 0%,rgba(10,10,10,0.06) 52%,rgba(10,10,10,0.3) 100%)}
+        .fcard-ext{position:absolute;top:0.55rem;right:0.6rem;z-index:3;font-size:11px;color:rgba(245,245,243,0.6)}
+        @media(hover:none),(max-width:768px){ .fcard-ext,.arw{display:none} }
+        .fcard-play{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);z-index:3;width:30px;height:30px;border-radius:50%;border:1px solid rgba(245,245,243,0.7);display:grid;place-items:center;background:rgba(10,10,10,0.22);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
+        .fcard:hover .fcard-play{transform:translate(-50%,-50%) scale(1.14)}
+        .fcard-foot{position:absolute;left:0.65rem;right:0.65rem;bottom:0.7rem;z-index:3}
+        .fcard-h{display:block;font-size:8.5px;letter-spacing:0.11em;text-transform:uppercase;color:rgba(245,245,243,0.5)}
+        .fcard-l{display:block;font-size:11.5px;font-weight:500;color:var(--white);line-height:1.28;margin-top:0.15rem}
+
+        .form-err{font-size:13px;line-height:1.6;color:#8a1f1f}
+
+        @media(max-width:1180px){ .wall{grid-template-columns:repeat(3,1fr)} }
+        @media(max-width:768px){
+          .cl-head{padding:0 1.5rem 0.8rem;flex-direction:column;align-items:flex-start;gap:0.35rem}
+          .wall{display:flex;gap:0.6rem;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:1.5rem;scrollbar-width:none;padding:0 1.5rem 1rem}
+          .wall::-webkit-scrollbar{display:none}
+          .wcard{flex:0 0 auto;width:min(48vw,208px);scroll-snap-align:start}
+          .wcard-foot{left:0.7rem;right:0.7rem;bottom:0.7rem}
+          .wcard-top{top:0.65rem;left:0.7rem;right:0.7rem;font-size:8.5px}
+          .wcard-name{font-size:13.5px}
+          .wcard-hook{font-size:10px;margin-top:0.25rem}
+          .wcard-read{max-height:2.5em;opacity:1;margin-top:0.4rem;font-size:8.5px}
+          .wall-hint{padding:0.4rem 1.5rem 2rem}
+          .wall-count{display:none}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .feed-track,.cl-ticker,.ticker-track{animation:none!important;transform:none!important}
+          .feed-strip,#clients .cl-ticker-wrap{overflow-x:auto}
+          .wcard-read{max-height:2.5em;opacity:1;margin-top:0.55rem}
+        }
       `}</style>
 
       {/* INTRO */}
@@ -248,9 +322,13 @@ export default function Home() {
       </div>
 
       <div id="clients">
+        <div className="cl-head">
+          <span className="cl-claim">Trusted by <b>30+</b> brands across Auckland</span>
+          <span className="sec-label">Selected clients</span>
+        </div>
         <div className="cl-ticker-wrap">
           <div className="cl-ticker">
-            {['Sony','BCG Group','Harcourts','Ray White','Allgot','Victoria Sushi','Pocha','Zen Skin','Sony','BCG Group','Harcourts','Ray White','Allgot','Victoria Sushi','Pocha','Zen Skin'].map((c,i) => (
+            {[...clients, ...clients].map((c,i) => (
               <span key={i} className="cl-item">{c}</span>
             ))}
           </div>
@@ -260,34 +338,66 @@ export default function Home() {
       <section id="work">
         <div className="work-hd">
           <span className="sec-label">Selected work</span>
-          <span className="sec-label">({portfolios.length.toString().padStart(2,'0')})</span>
+          <span className="sec-label">({String(work.length).padStart(2,'0')})</span>
         </div>
-        <div>
-          {portfolios.length > 0 ? portfolios.map(p => (
-            <a key={p.id} className="w-item" href={p.id === '1f0ff87c-4fd3-4e8f-964d-247f6253cb19' ? '/hospitality' : `/work/${p.id}`}>
-              <span className="w-client">{p.client}</span>
-              <span className="w-type">{p.type}</span>
-              <span className="w-yr">{p.year}</span>
-              <span className="wa">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            </a>
-          )) : (
-            ['BCG Group','Harcourts','Victoria Sushi','Allgot','Ray White','F&B Campaign'].map((c,i) => (
-              <a key={i} className="w-item" href="#">
-                <span className="w-client">{c}</span>
-                <span className="w-type">Video Production</span>
-                <span className="w-yr">2025</span>
-                <span className="wa">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 13L13 1M13 1H4M13 1V10" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+        <div className="wall">
+          {work.map((w, i) => {
+            const inner = (
+              <>
+                {w.cover
+                  ? <img className="wcard-img" src={w.cover} alt="" loading={i < 3 ? 'eager' : 'lazy'}/>
+                  : <span className={`wcard-ph ph-${i % 6}`}/>}
+                <span className="wcard-veil"/>
+                <span className="wcard-top"><span>{String(i+1).padStart(2,'0')}</span><span>{w.sector}</span></span>
+                <span className="wcard-foot">
+                  <span className="wcard-name">{w.client}</span>
+                  <span className="wcard-hook">{w.hook}</span>
+                  <span className="wcard-read">{w.external ? <>See it on Instagram<span className="arw"> ↗︎</span></> : 'Read the case →'}</span>
                 </span>
-              </a>
-            ))
-          )}
+              </>
+            )
+            return w.external
+              ? <a key={w.client} className="wcard" href={w.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+              : <a key={w.client} className="wcard" href={w.href}>{inner}</a>
+          })}
+        </div>
+        <div className="wall-hint">
+          <span className="sec-label">Click any project for the full case study</span>
+          <span className="sec-label wall-count">9:16 · AS SHOT</span>
+        </div>
+      </section>
+
+      <section id="feed">
+        <div className="work-hd">
+          <span className="sec-label">Latest from the feed</span>
+          <a className="sec-label feed-link" href="https://instagram.com/viralx_nz" target="_blank" rel="noopener noreferrer">@VIRALX_NZ<span className="arw"> ↗︎</span></a>
+        </div>
+        <div className="feed-strip">
+          {[0,1].map(track => (
+            <div className="feed-track" key={track} aria-hidden={track === 1}>
+              {[...feed, ...feed].map((f, i) => (
+                <a key={`${track}-${i}`} className="fcard" href={f.url} target="_blank" rel="noopener noreferrer"
+                   tabIndex={track === 1 ? -1 : undefined} aria-label={`Watch on Instagram: ${f.label}`}>
+                  {f.cover
+                    ? <img className="fcard-img" src={f.cover} alt="" loading="lazy" />
+                    : <span className={`wcard-ph ph-${(i+3) % 6}`}/>}
+                  <span className="fcard-veil"/>
+                  <span className="fcard-ext" aria-hidden="true">↗︎</span>
+                  <span className="fcard-play" aria-hidden="true">
+                    <svg width="8" height="10" viewBox="0 0 8 10" fill="none"><path d="M8 5L0 9.33V0.67L8 5Z" fill="#f5f5f3"/></svg>
+                  </span>
+                  <span className="fcard-foot">
+                    <span className="fcard-h">{f.handle}</span>
+                    <span className="fcard-l">{f.label}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="wall-hint">
+          <span className="sec-label">Opens on Instagram</span>
+          <span className="sec-label">Updated weekly</span>
         </div>
       </section>
 
@@ -318,7 +428,7 @@ export default function Home() {
         <div className="svc-top">
           <div className="svc-hd">
             <span className="sec-label">What we do</span>
-            <h2>Seven<br/>services.</h2>
+            <h2>Nine<br/>services.</h2>
           </div>
           <div className="svc-intro"><p>We don&apos;t follow trends. We&apos;re already living them. Content built for the scroll, the share, the save.</p></div>
         </div>
@@ -330,7 +440,9 @@ export default function Home() {
             {n:'04',name:'Photography',desc:'Food, property, and lifestyle photography that sells.'},
             {n:'05',name:'Creative Direction',desc:'Visual identity, content strategy, brand storytelling.'},
             {n:'06',name:'Influencer & Talent',desc:'Curated creator partnerships. Authentic reach, real results.'},
-            {n:'07',name:'Web Design',desc:'Clean, modern websites built to convert visitors into clients.'}
+            {n:'07',name:'Web Design',desc:'Clean, modern websites built to convert visitors into clients.'},
+            {n:'08',name:'Graphic Design',desc:'Posters, menus, signage and campaign artwork. Print-ready, and matched to how you look on screen.'},
+            {n:'09',name:'Event Production',desc:'Launches, openings and brand activations, run end to end and filmed while they happen.'}
           ].map(s => (
             <div key={s.n} className="svc-item">
               <p className="svc-n">{s.n}</p>
@@ -375,9 +487,12 @@ export default function Home() {
                   <option>Creative Direction</option>
                   <option>Influencer & Talent</option>
                   <option>Web Design</option>
+                  <option>Graphic Design</option>
+                  <option>Event Production</option>
                 </select>
               </div>
               <div><label className="fl">About your project</label><textarea placeholder="What are you working on?" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}></textarea></div>
+              {formError && <p className="form-err" role="alert">{formError}</p>}
               <button className="sub-btn" onClick={handleSubmit} disabled={sending}>
                 {sending ? 'Sending...' : 'Send enquiry'}
               </button>
@@ -394,7 +509,7 @@ export default function Home() {
           <li><a href="#verticals">Studio</a></li>
           <li><a href="https://instagram.com/viralx_nz" target="_blank">Instagram</a></li>
         </ul>
-        <p className="ft-copy">© 2025 ViralX Agency · Auckland, NZ</p>
+        <p className="ft-copy">© {new Date().getFullYear()} ViralX Agency · Auckland, NZ</p>
       </footer>
     </>
   )
